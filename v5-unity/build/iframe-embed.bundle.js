@@ -75,8 +75,7 @@ return j.call(r(a),c)})),b))for(;i>h;h++)b(a[h],c,g?d:d.call(a[h],h,b(a[h],c)));
 
 
 /***/ }),
-/* 1 */,
-/* 2 */
+/* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -172,7 +171,7 @@ function toComment(sourceMap) {
 }
 
 /***/ }),
-/* 3 */
+/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -460,6 +459,7 @@ module.exports = function (list, options) {
 };
 
 /***/ }),
+/* 3 */,
 /* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -20528,7 +20528,7 @@ var options = {}
 options.insert = "head";
 options.singleton = false;
 
-var update = __webpack_require__(3)(content, options);
+var update = __webpack_require__(2)(content, options);
 
 if (content.locals) {
   module.exports = content.locals;
@@ -20539,7 +20539,7 @@ if (content.locals) {
 /* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(2)(false);
+exports = module.exports = __webpack_require__(1)(false);
 // Imports
 var getUrl = __webpack_require__(5);
 var ___CSS_LOADER_URL___0___ = getUrl(__webpack_require__(12));
@@ -21963,7 +21963,7 @@ var options = {}
 options.insert = "head";
 options.singleton = false;
 
-var update = __webpack_require__(3)(content, options);
+var update = __webpack_require__(2)(content, options);
 
 if (content.locals) {
   module.exports = content.locals;
@@ -21974,7 +21974,7 @@ if (content.locals) {
 /* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(2)(false);
+exports = module.exports = __webpack_require__(1)(false);
 // Module
 exports.push([module.i, "/*\n\nOnline Python Tutor\nhttps://github.com/pgbovine/OnlinePythonTutor/\n\nCopyright (C) Philip J. Guo (philip@pgbovine.net)\n\nPermission is hereby granted, free of charge, to any person obtaining a\ncopy of this software and associated documentation files (the\n\"Software\"), to deal in the Software without restriction, including\nwithout limitation the rights to use, copy, modify, merge, publish,\ndistribute, sublicense, and/or sell copies of the Software, and to\npermit persons to whom the Software is furnished to do so, subject to\nthe following conditions:\n\nThe above copyright notice and this permission notice shall be included\nin all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS\nOR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF\nMERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.\nIN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY\nCLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,\nTORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE\nSOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n\n*/\n\n/* Most recent color scheme redesign on 2012-08-19 */\n\n/* To prevent CSS namespace clashes, prefix all rules with:\n     div.ExecutionVisualizer\n*/\n\n\n/* reset some styles to nullify effects of existing stylesheets\n   e.g., http://meyerweb.com/eric/tools/css/reset/\n*/\ndiv.ExecutionVisualizer {\n  /* none for now */\n  padding: 1rem 1.3rem;\n  padding-top: 1rem;\n  padding-right: 1.3rem;\n  padding-bottom: 15rem;\n  padding-left: 1.3rem;\n}\n\ndiv.ExecutionVisualizer table.visualizer {\n  font-family: verdana, arial, helvetica, sans-serif;\n  font-size: 10pt;\n  margin-bottom: 10px;\n}\n\ndiv.ExecutionVisualizer table.visualizer td.vizLayoutTd {\n  vertical-align: top;\n}\n\ndiv.ExecutionVisualizer td#stack_td,\ndiv.ExecutionVisualizer td#heap_td {\n  vertical-align:top;\n  font-size: 10pt; /* don't make fonts in the heap so big! */\n}\n\ndiv.ExecutionVisualizer #dataViz {\n  /*margin-left: 25px;*/\n}\n\n/*\ndiv.ExecutionVisualizer div#codeDisplayDiv {\n  width: 550px;\n}\n*/\n\ndiv.ExecutionVisualizer div#pyCodeOutputDiv {\n  /*max-width: 550px;*/\n  max-height: 460px;\n  /*max-height: 620px;*/\n  overflow: auto;\n  /*margin-bottom: 4px;*/\n\n  margin-left: auto;\n  margin-right: auto;\n}\n\ndiv.ExecutionVisualizer table#pyCodeOutput {\n  font-family: Andale mono, monospace;\n  /*font-size:12pt;*/\n  font-size:11pt;\n  line-height:1.1em;\n\n  border-collapse: separate; /* some crazy CSS voodoo that needs to be\n                                there so that SVG arrows to the left\n                                of the code line up vertically in Chrome */\n  border-spacing: 0px;\n  border-top: 1px solid #bbb;\n  padding-top: 3px;\n  border-bottom: 1px solid #bbb;\n  /*margin-top: 6px;*/\n  margin: 6px auto; /* Center code in its pane */\n}\n\n/* don't wrap lines within code output ... FORCE scrollbars to appear */\ndiv.ExecutionVisualizer table#pyCodeOutput td {\n  white-space: nowrap;\n  vertical-align: middle; /* explicitly force, to override external CSS conflicts */\n}\n\ndiv.ExecutionVisualizer #leftCodeGutterSVG {\n  width: 18px;\n  min-width: 18px; /* make sure it doesn't squash too thin */\n  height: 0px; /* programmatically set this later ... IE needs this to\n                  be 0 or it defaults to something arbitrary and gross */\n}\n\ndiv.ExecutionVisualizer #prevLegendArrowSVG,\ndiv.ExecutionVisualizer #curLegendArrowSVG {\n  width: 18px;\n  height: 10px;\n}\n\ndiv.ExecutionVisualizer .arrow {\n  font-size: 16pt;\n}\n\ndiv.ExecutionVisualizer table#pyCodeOutput .lineNo {\n  color: #aaa;\n  padding: 0.2em;\n  padding-left: 0.3em;\n  padding-right: 0.5em;\n  text-align: right;\n}\n\ndiv.ExecutionVisualizer table#pyCodeOutput .cod {\n  /*font-weight: bold;*/\n  margin-left: 3px;\n  padding-left: 7px;\n  text-align: left; /* necessary or else doesn't work properly in IE */\n}\n\ndiv.ExecutionVisualizer div#progOutputs {\n  margin-left: 13px; /* line up with heap visualizations */\n  margin-bottom: 3px;\n}\n\ndiv.ExecutionVisualizer div#legendDiv {\n  padding: 0px;\n  text-align: left;\n  color: #666;\n  font-size: 9pt;\n}\n\ndiv.ExecutionVisualizer div#editCodeLinkDiv {\n  text-align: center;\n  margin-left: 2px;\n  margin-right: 2px;\n  cursor: pointer;\n  /* display: block; */\n  background: #0050ff;\n  color: #fff;\n  margin: 0 auto;\n  padding: .2rem .6rem .4rem .5rem;\n  border: 0;\n  border-radius: 8px;\n  font-size: 11px;\n}\n\ndiv.ExecutionVisualizer div#annotateLinkDiv {\n  /*text-align: left;*/\n  margin-top: 0px;\n  margin-bottom: 12px;\n  /*\n  margin-left: auto;\n  margin-right: auto;\n  */\n}\n\ndiv.ExecutionVisualizer div#stepAnnotationDiv {\n  margin-bottom: 12px;\n}\n\ndiv.ExecutionVisualizer textarea#stepAnnotationEditor,\ndiv.ExecutionVisualizer textarea#vizTitleEditor,\ndiv.ExecutionVisualizer textarea#vizDescriptionEditor {\n  border: 1px solid #999999;\n  padding: 4px;\n\n  overflow: auto; /* to look pretty on IE */\n  /* make sure textarea doesn't grow and stretch */\n  resize: none;\n}\n\n\ndiv.ExecutionVisualizer #errorOutput {\n  color: #e93f34; /* should match brightRed JavaScript variable */\n  font-size: 11pt;\n  padding-top: 2px;\n  line-height: 1.5em;\n  margin-bottom: 4px;\n}\n\n/* VCR control buttons for stepping through execution */\n\ndiv.ExecutionVisualizer #vcrControls {\n  margin: 15px auto;\n  /*width: 100%;*/\n  text-align: center;\n}\n\ndiv.ExecutionVisualizer #vcrControls button {\n  margin-left: 2px;\n  margin-right: 2px;\n  cursor: pointer;\n  /* display: block; */\n  background: #0050ff;\n  color: #fff;\n  margin: 0 auto;\n  padding: .2rem .6rem .4rem .5rem;\n  border: 0;\n  border-radius: 8px;\n  font-size: 11px;\n}\n\ndiv.ExecutionVisualizer #vcrControls #curInstr {\n  margin-left: 4px;\n  margin-right: 4px;\n}\n\ndiv.ExecutionVisualizer #pyStdout {\n  border: 1px solid #999999;\n  font-size: 10pt;\n  padding: 3px;\n  font-family: Andale mono, monospace;\n\n\n  overflow: scroll; /* to look pretty on IE */\n  /* make sure textarea doesn't grow and stretch */\n  resize: none;\n}\n\n/* Trying to make textarea fixed size chai@pathrise */\n#pyStdout{\n  resize: none;\n}\n\ndiv.ExecutionVisualizer .vizFrame {\n  margin-bottom: 20px;\n  padding-left: 8px;\n  border-left: 2px solid #cccccc;\n}\n\n\n/* Rendering of primitive types */\n\ndiv.ExecutionVisualizer .importedObj {\n  font-size: 8pt;\n}\n\ndiv.ExecutionVisualizer .nullObj {\n/*  font-size: 8pt; */\n}\n\ndiv.ExecutionVisualizer .stringObj,\ndiv.ExecutionVisualizer .customObj,\ndiv.ExecutionVisualizer .funcObj {\n  font-family: Andale mono, monospace;\n  white-space: nowrap;\n}\n\ndiv.ExecutionVisualizer .funcCode {\n  font-size: 8pt;\n}\n\ndiv.ExecutionVisualizer .retval {\n  font-size: 9pt;\n}\n\ndiv.ExecutionVisualizer .stackFrame .retval {\n  color: #e93f34; /* highlight non-zombie stack frame return values -\n                     should match brightRed JavaScript variable */\n}\n\n/* Rendering of basic compound types */\n\ndiv.ExecutionVisualizer table.listTbl,\ndiv.ExecutionVisualizer table.tupleTbl,\ndiv.ExecutionVisualizer table.setTbl {\n  background-color: #ffffc6;\n}\n\n\ndiv.ExecutionVisualizer table.listTbl {\n  border: 0px solid black;\n  border-spacing: 0px;\n}\n\ndiv.ExecutionVisualizer table.listTbl td.listHeader,\ndiv.ExecutionVisualizer table.tupleTbl td.tupleHeader {\n  padding-left: 4px;\n  padding-top: 2px;\n  padding-bottom: 3px;\n  font-size: 8pt;\n  color: #777;\n  text-align: left;\n  border-left: 1px solid #555555;\n}\n\ndiv.ExecutionVisualizer table.tupleTbl {\n  border-spacing: 0px;\n  color: black;\n\n  border-bottom: 1px solid #555555; /* must match td.tupleHeader border */\n  border-top: 1px solid #555555; /* must match td.tupleHeader border */\n  border-right: 1px solid #555555; /* must match td.tupleHeader border */\n}\n\n\ndiv.ExecutionVisualizer table.listTbl td.listElt {\n  border-bottom: 1px solid #555555; /* must match td.listHeader border */\n  border-left: 1px solid #555555; /* must match td.listHeader border */\n}\n\n\n/* for C and C++ visualizations */\n\n/* make this slightly more compact than listTbl since arrays can be\n   rendered on the stack so we want to kinda conserve space */\ndiv.ExecutionVisualizer table.cArrayTbl {\n  background-color: #ffffc6;\n  padding-left: 0px;\n  padding-top: 0px;\n  padding-bottom: 0px;\n  font-size: 8pt;\n  color: #777;\n  text-align: left;\n  border: 0px solid black;\n  border-spacing: 0px;\n}\n\ndiv.ExecutionVisualizer table.cArrayTbl td.cArrayHeader {\n  padding-left: 5px;\n  padding-top: 0px;\n  padding-bottom: 2px;\n  font-size: 6pt;\n  color: #777;\n  text-align: left;\n  border-bottom: 0px solid black; /* override whatever we're nested in */\n}\n\ndiv.ExecutionVisualizer table.cArrayTbl td.cArrayElt {\n  border-bottom: 1px solid #888;\n  border-left: 1px solid #888;\n  border-top: 0px solid black;\n  color: black;\n\n  padding-top: 2px;\n  padding-bottom: 4px;\n  padding-left: 5px;\n  padding-right: 4px;\n  vertical-align: bottom;\n}\n\ndiv.ExecutionVisualizer table.cArrayTbl td.cMultidimArrayHeader {\n  padding-left: 5px;\n  padding-right: 5px;\n  padding-top: 1px;\n  padding-bottom: 3px;\n  font-size: 6pt;\n  color: #777;\n  text-align: left;\n  border-top: 1px solid #888;\n  border-left: 1px solid #888;\n  border-bottom: 0px solid black; /* override whatever we're nested in */\n}\n\ndiv.ExecutionVisualizer table.cArrayTbl td.cMultidimArrayElt {\n  border-left: 1px solid #888;\n  color: black;\n  padding-top: 1px;\n  padding-bottom: 4px;\n  padding-left: 5px;\n  padding-right: 5px;\n  vertical-align: bottom;\n}\n\n\ndiv.ExecutionVisualizer .cdataHeader {\n  font-size: 6pt;\n  color: #555;\n  padding-bottom: 2px;\n}\n\ndiv.ExecutionVisualizer .cdataElt {\n  font-size: 10pt;\n}\n\ndiv.ExecutionVisualizer .cdataUninit {\n  color: #888;\n}\n\n\ndiv.ExecutionVisualizer table.tupleTbl td.tupleElt {\n  border-left: 1px solid #555555; /* must match td.tupleHeader border */\n}\n\ndiv.ExecutionVisualizer table.customObjTbl {\n  background-color: white;\n  color: black;\n  border: 1px solid black;\n}\n\ndiv.ExecutionVisualizer table.customObjTbl td.customObjElt {\n  padding: 5px;\n  font-size: 9pt; /* make this smaller */\n}\n\ndiv.ExecutionVisualizer table.listTbl td.listElt,\ndiv.ExecutionVisualizer table.tupleTbl td.tupleElt {\n  padding-top: 0px;\n  padding-bottom: 8px;\n  padding-left: 10px;\n  padding-right: 10px;\n  vertical-align: bottom;\n}\n\ndiv.ExecutionVisualizer table.setTbl {\n  border: 1px solid #555555;\n  border-spacing: 0px;\n  text-align: center;\n}\n\ndiv.ExecutionVisualizer table.setTbl td.setElt {\n  padding: 8px;\n}\n\n\ndiv.ExecutionVisualizer table.dictTbl,\ndiv.ExecutionVisualizer table.instTbl,\ndiv.ExecutionVisualizer table.classTbl {\n  border-spacing: 1px;\n}\n\ndiv.ExecutionVisualizer table.dictTbl td.dictKey,\ndiv.ExecutionVisualizer table.instTbl td.instKey,\ndiv.ExecutionVisualizer table.classTbl td.classKey {\n  background-color: #faebbf;\n}\n\ndiv.ExecutionVisualizer table.dictTbl td.dictVal,\ndiv.ExecutionVisualizer table.instTbl td.instVal,\ndiv.ExecutionVisualizer table.classTbl td.classVal,\ndiv.ExecutionVisualizer td.funcCod {\n  background-color: #ffffc6;\n}\n\n\ndiv.ExecutionVisualizer table.dictTbl td.dictKey,\ndiv.ExecutionVisualizer table.instTbl td.instKey,\ndiv.ExecutionVisualizer table.classTbl td.classKey {\n  padding-top: 6px /*15px*/;\n  padding-bottom: 6px;\n  padding-left: 10px;\n  padding-right: 4px;\n\n  text-align: right;\n}\n\ndiv.ExecutionVisualizer table.dictTbl td.dictVal,\ndiv.ExecutionVisualizer table.instTbl td.instVal,\ndiv.ExecutionVisualizer table.classTbl td.classVal {\n  padding-top: 6px; /*15px*/;\n  padding-bottom: 6px;\n  padding-right: 10px;\n  padding-left: 4px;\n}\n\ndiv.ExecutionVisualizer td.funcCod {\n  padding-left: 4px;\n}\n\ndiv.ExecutionVisualizer table.classTbl td,\ndiv.ExecutionVisualizer table.instTbl td {\n  border-bottom: 1px #888 solid;\n}\n\ndiv.ExecutionVisualizer table.classTbl td.classVal,\ndiv.ExecutionVisualizer table.instTbl td.instVal {\n  border-left: 1px #888 solid;\n}\n\ndiv.ExecutionVisualizer table.classTbl,\ndiv.ExecutionVisualizer table.funcTbl {\n  border-collapse: collapse;\n  border: 1px #888 solid;\n}\n\n/* only add a border to dicts if they're embedded within another object */\ndiv.ExecutionVisualizer td.listElt table.dictTbl,\ndiv.ExecutionVisualizer td.tupleElt table.dictTbl,\ndiv.ExecutionVisualizer td.dictVal table.dictTbl,\ndiv.ExecutionVisualizer td.instVal table.dictTbl,\ndiv.ExecutionVisualizer td.classVal table.dictTbl {\n  border: 1px #888 solid;\n}\n\ndiv.ExecutionVisualizer .objectIdLabel {\n  font-size: 8pt;\n  color: #444;\n  margin-bottom: 2px;\n}\n\ndiv.ExecutionVisualizer .typeLabel {\n  font-size: 8pt;\n  color: #555;\n  margin-bottom: 2px;\n}\n\ndiv.ExecutionVisualizer div#stack,\ndiv.ExecutionVisualizer div#globals_area {\n  padding-left: 10px;\n  padding-right: 30px;\n\n  /* no longer necessary ... */\n  /*float: left;*/\n  /* border-right: 1px dashed #bbbbbb; */\n}\n\ndiv.ExecutionVisualizer div.stackFrame,\ndiv.ExecutionVisualizer div.zombieStackFrame {\n  background-color: #ffffff;\n  margin-bottom: 15px;\n  padding: 2px;\n  padding-left: 6px;\n  padding-right: 6px;\n  padding-bottom: 4px;\n  font-size: 10pt;\n}\n\ndiv.ExecutionVisualizer div.zombieStackFrame {\n  border-left: 1px dotted #aaa;\n  /*color: #c0c0c0;*/\n  color: #a0a0a0;\n}\n\ndiv.ExecutionVisualizer div.highlightedStackFrame {\n  background-color: #e2ebf6;\n  /*background-color: #d7e7fb;*/\n\n  /*background-color: #c0daf8;*/\n  /*background-color: #9eeaff #c5dfea;*/\n}\n\ndiv.ExecutionVisualizer div.stackFrame,\ndiv.ExecutionVisualizer div.highlightedStackFrame {\n  border-left: 1px solid #a6b3b6;\n}\n\n\ndiv.ExecutionVisualizer div.stackFrameHeader {\n  font-family: Andale mono, monospace;\n  font-size: 10pt;\n  margin-top: 4px;\n  margin-bottom: 3px;\n  white-space: nowrap;\n}\n\ndiv.ExecutionVisualizer td.stackFrameVar {\n  text-align: right;\n  padding-right: 8px;\n  padding-top: 3px;\n  padding-bottom: 3px;\n}\n\ndiv.ExecutionVisualizer td.stackFrameValue {\n  text-align: left;\n  border-bottom: 1px solid #aaaaaa;\n  border-left: 1px solid #aaaaaa;\n\n  vertical-align: middle;\n\n  padding-top: 3px;\n  padding-left: 3px;\n  padding-bottom: 3px;\n}\n\ndiv.ExecutionVisualizer .stackFrameVarTable tr {\n\n}\n\ndiv.ExecutionVisualizer .stackFrameVarTable {\n  text-align: right;\n  padding-top: 3px;\n\n  /* right-align the table */\n  margin-left: auto;\n  margin-right: 0px;\n\n  /* hack to counteract possible nasty CSS reset styles from parent divs */\n  border-collapse: separate;\n  border-spacing: 2px;\n}\n\ndiv.ExecutionVisualizer div#heap {\n  float: left;\n  padding-left: 30px;\n}\n\ndiv.ExecutionVisualizer td.toplevelHeapObject {\n  /* needed for d3 to do transitions */\n  padding-left: 8px;\n  padding-right: 8px;\n  padding-top: 4px;\n  padding-bottom: 4px;\n  /*\n  border: 2px dotted white;\n  border-color: white;\n  */\n}\n\ndiv.ExecutionVisualizer table.heapRow {\n  margin-bottom: 10px;\n}\n\ndiv.ExecutionVisualizer div.heapObject {\n  padding-left: 2px; /* leave a TINY amount of room for connector endpoints */\n}\n\ndiv.ExecutionVisualizer div.heapPrimitive {\n  padding-left: 4px; /* leave some more room for connector endpoints */\n}\n\ndiv.ExecutionVisualizer div#stackHeader {\n  margin-bottom: 15px;\n  text-align: right;\n}\n\ndiv.ExecutionVisualizer div#heapHeader {\n  /*margin-top: 2px;\n  margin-bottom: 13px;*/\n  margin-bottom: 15px;\n}\n\ndiv.ExecutionVisualizer div#langDisplayDiv {\n  text-align: center;\n  margin-top: 2pt;\n  margin-bottom: 3pt;\n}\n\ndiv.ExecutionVisualizer div#langDisplayDiv,\ndiv.ExecutionVisualizer div#stackHeader,\ndiv.ExecutionVisualizer div#heapHeader {\n  color: #333333;\n  font-size: 10pt;\n}\n\ndiv.ExecutionVisualizer #executionSlider {\n  /* if you set 'width', then it looks ugly when you dynamically resize */\n  margin-top: 15px;\n  margin-bottom: 5px;\n\n  /* DON'T center this, since we need breakpoints in executionSliderFooter to be well aligned */\n  width: 98%;\n}\n\ndiv.ExecutionVisualizer #executionSliderCaption {\n  font-size: 8pt;\n  color: #666666;\n  margin-top: 15px;\n}\n\ndiv.ExecutionVisualizer #executionSliderFooter {\n  margin-top: -7px; /* make it butt up against #executionSlider */\n}\n\ndiv.ExecutionVisualizer #codeFooterDocs,\ndiv.ExecutionVisualizer #printOutputDocs {\n  margin-bottom: 3px;\n  font-size: 8pt;\n  color: #666;\n}\n\ndiv.ExecutionVisualizer #codeFooterDocs {\n  margin-top: 5px;\n  margin-bottom: 12px;\n  width: 95%;\n}\n\n/* darken slider handle a bit */\ndiv.ExecutionVisualizer .ui-slider .ui-slider-handle {\n  border: 1px solid #999;\n}\n\n\n/* for annotation bubbles */\n\n/* For styling tricks, see: http://css-tricks.com/textarea-tricks/ */\ntextarea.bubbleInputText {\n  border: 1px solid #ccc;\n  outline: none;\n  overflow: auto; /* to look pretty on IE */\n\n  /* make sure textarea doesn't grow and stretch the enclosing bubble */\n  resize: none;\n  width: 225px;\n  max-width: 225px;\n  height: 35px;\n  max-height: 35px;\n}\n\ndiv.ExecutionVisualizer .annotationText,\ndiv.ExecutionVisualizer .vizDescriptionText {\n  font-family: verdana, arial, helvetica, sans-serif;\n  font-size: 11pt;\n  line-height: 1.5em;\n}\n\ndiv.ExecutionVisualizer .vizTitleText {\n  font-family: verdana, arial, helvetica, sans-serif;\n  font-size: 16pt;\n  margin-bottom: 12pt;\n}\n\ndiv.ExecutionVisualizer div#vizHeader {\n  margin-bottom: 10px;\n  width: 700px;\n  max-width: 700px;\n}\n\n/* prev then curr, so curr gets precedence when both apply */\ndiv.ExecutionVisualizer .highlight-prev {\n  background-color: #F0F0EA;\n}\n\ndiv.ExecutionVisualizer .highlight-cur {\n  background-color: #FFFF66;\n}\n\ndiv.ExecutionVisualizer .highlight-legend {\n  padding: 2px;\n}\n\n/* resizing sliders from David Pritchard */\n.ui-resizable-e {\n  background-color: #dddddd;\n  width: 1px;\n  border: 1px solid #dddddd;\n}\n\n.ui-resizable-e:hover {\n  border-color: #dddddd;\n}\n\ndiv.ExecutionVisualizer a,\ndiv.ExecutionVisualizer a:visited,\ndiv.ExecutionVisualizer a:hover {\n  color: #ffffff;\n}\n\ndiv.ExecutionVisualizer div#rawUserInputDiv {\n  padding: 5px;\n  width: 95%;\n  margin: 5px auto;\n  text-align: center;\n  border: 1px #e93f34 solid;\n}\n\n/* for pyCrazyMode */\n\n/* prev then curr, so curr gets precedence when both apply */\ndiv.ExecutionVisualizer .pycrazy-highlight-prev {\n  background-color: #eeeeee; /*#F0F0EA;*/\n  /*\n  text-decoration: none;\n  border-bottom: 1px solid #dddddd;\n  */\n}\n\ndiv.ExecutionVisualizer .pycrazy-highlight-cur {\n  background-color: #FFFF66;\n  /* aligned slightly higher than border-bottom */\n  /*\n  text-decoration: none;\n  border-bottom: 1px solid #e93f34;\n  */\n}\n\ndiv.ExecutionVisualizer .pycrazy-highlight-prev-and-cur {\n  background-color: #FFFF66;\n\n  text-decoration: none;\n  border-bottom: 1px solid #999999;\n}\n\n\n#optTabularView thead.stepTableThead {\n  background-color: #bbb;\n}\n\n#optTabularView tbody.stepTableTbody {\n}\n\n#optTabularView td.stepTableTd {\n  padding: 3px 10px;\n}\n\n\n/* BEGIN Java frontend by David Pritchard and Will Gwozdz */\n\n/* stack and queue css by Will Gwozdz */\ndiv.ExecutionVisualizer table.queueTbl,\ndiv.ExecutionVisualizer table.stackTbl {\n  background-color: #ffffc6;\n}\n\ndiv.ExecutionVisualizer table.queueTbl,\ndiv.ExecutionVisualizer table.stackTbl {\n  border: 0px solid black;\n  border-spacing: 0px;\n}\n\ndiv.ExecutionVisualizer table.stackTbl td.stackElt,\ndiv.ExecutionVisualizer table.queueTbl td.queueElt {\n  padding-left: 8px;\n  padding-right: 8px;\n  padding-top: 2px;\n  padding-bottom: 3px;\n  border-top: 1px solid #555555;\n  border-bottom: 1px solid #555555;\n  border-left: 1px dashed #555555;\n}\n\ndiv.ExecutionVisualizer table.stackTbl td.stackFElt,\ndiv.ExecutionVisualizer table.queueTbl td.queueFElt {\n  background-color: white;\n  border-top: 1px solid #555555;\n  border-bottom: 1px solid #555555;\n}\n\ndiv.ExecutionVisualizer table.stackTbl td.stackLElt {\n  background-color: white;\n  border-left: 1px solid #555555;\n}\n\ndiv.ExecutionVisualizer table.queueTbl td.queueLElt {\n  background-color: white;\n  border-top: 1px solid#555555;\n  border-bottom: 1px solid #555555;\n  border-left: 1px dashed #555555;\n}\n\n/* This ensures a border is drawn around a dict\n   if its nested in another object. */\ndiv.ExecutionVisualizer td.stackElt table.dictTbl,\ndiv.ExecutionVisualizer td.stackLElt table.dictTbl,\ndiv.ExecutionVisualizer td.stackFElt table.dictTbl,\ndiv.ExecutionVisualizer td.queueElt table.dictTbl,\ndiv.ExecutionVisualizer td.queueLElt table.dictTbl,\ndiv.ExecutionVisualizer td.queueFElt table.dictTbl {\n  border: 1px #888 solid;\n}\n\n.symbolic {\n  font-size: 18pt;\n}\n\n/* END Java frontend by David Pritchard and Will Gwozdz */\n", ""]);
 
@@ -21990,8 +21990,8 @@ exports.push([module.i, "/*\n\nOnline Python Tutor\nhttps://github.com/pgbovine/
 // LICENSE: https://github.com/pgbovine/OnlinePythonTutor/blob/master/LICENSE.txt
 Object.defineProperty(exports, "__esModule", { value: true });
 /// <reference path="_references.ts" />
+__webpack_require__(31);
 __webpack_require__(32);
-__webpack_require__(33);
 // need to directly import the class for type checking to work
 var pytutor_1 = __webpack_require__(4);
 // the main event!
@@ -22011,70 +22011,34 @@ var AbstractBaseFrontend = /** @class */ (function () {
         this.traceCache = [];
         // 'edit' or 'display'. also support 'visualize' for backward
         // compatibility (same as 'display')
-        this.appMode = 'edit';
+        this.appMode = "edit";
         // inputted by user for raw_input / mouse_input events
         this.rawInputLst = [];
         this.isExecutingCode = false;
         // optional: not all frontends keep track of deltas
         this.dmp = new diff_match_patch();
-        this.curCode = ''; // for dmp snapshots, kinda kludgy
+        this.curCode = ""; // for dmp snapshots, kinda kludgy
         this.deltaObj = undefined;
         this.num414Tries = 0;
         // note that we use '2' and '3' instead of 'py2' and 'py3' due to legacy reasons
         this.langSettingToBackendScript = {
-            // backend scripts to execute (Python 2 and 3 variants, if available)
-            // make two copies of ../web_exec.py and give them the following names,
-            // then change the first line (starting with #!) to the proper version
-            // of the Python interpreter (i.e., Python 2 or Python 3).
-            // Note that your hosting provider might have stringent rules for what
-            // kind of scripts are allowed to execute. For instance, my provider
-            // (Webfaction) seems to let scripts execute only if permissions are
-            // something like:
-            // -rwxr-xr-x 1 pgbovine pgbovine 2.5K Jul  5 22:46 web_exec_py2.py*
-            // (most notably, only the owner of the file should have write
-            //  permissions)
-            '2': 'web_exec_py2.py',
-            '3': 'web_exec_py3.py',
-            // empty dummy scripts just to do logging on Apache server
-            'js': 'web_exec_js.py',
-            'ts': 'web_exec_ts.py',
-            'java': 'web_exec_java.py',
-            'ruby': 'web_exec_ruby.py',
-            'c': 'web_exec_c.py',
-            'cpp': 'web_exec_cpp.py',
-            // experimental!
-            'py3anaconda': 'web_exec_py3anaconda.py',
+            // backend scripts for JavaScript and TypeScript execution
+            js: "web_exec_js.py",
+            ts: "web_exec_js.py",
         };
         // these settings are all customized for my own server setup,
         // so you will need to customize for your server:
-        this.serverRoot = (window.location.protocol === 'https:') ?
-            'https://cokapi.com/' : // my certificate for https is registered via cokapi.com, so use it for now
-            'http://cokapi.com/'; // try cokapi.com so that hopefully it works through firewalls better than directly using IP addr
-        // (but that's just an unsubstantiated hunch)
+        this.serverRoot = "http://localhost:3000/"; // use local cokapi backend server
         // randomly pick one backup server to load balance:
-        this.backupHttpServerRoot = (Math.random() >= 0.5) ? 'http://45.33.41.179/' : 'http://23.239.12.25/';
+        this.backupHttpServerRoot = "http://cokapi.com/"; // fallback to remote server
         // see ../../v4-cokapi/cokapi.js for details
         this.langSettingToJsonpEndpoint = {
-            '2': null,
-            '3': null,
-            'js': this.serverRoot + 'exec_js_jsonp',
-            'ts': this.serverRoot + 'exec_ts_jsonp',
-            'java': this.serverRoot + 'exec_java_jsonp',
-            'ruby': this.serverRoot + 'exec_ruby_jsonp',
-            'c': this.serverRoot + 'exec_c_jsonp',
-            'cpp': this.serverRoot + 'exec_cpp_jsonp',
-            'py3anaconda': this.serverRoot + 'exec_pyanaconda_jsonp',
+            js: this.serverRoot + "exec_js_jsonp",
+            ts: this.serverRoot + "exec_ts_jsonp",
         };
         this.langSettingToJsonpEndpointBackup = {
-            '2': null,
-            '3': null,
-            'js': this.backupHttpServerRoot + 'exec_js_jsonp',
-            'ts': this.backupHttpServerRoot + 'exec_ts_jsonp',
-            'java': this.backupHttpServerRoot + 'exec_java_jsonp',
-            'ruby': this.backupHttpServerRoot + 'exec_ruby_jsonp',
-            'c': this.backupHttpServerRoot + 'exec_c_jsonp',
-            'cpp': this.backupHttpServerRoot + 'exec_cpp_jsonp',
-            'py3anaconda': this.backupHttpServerRoot + 'exec_pyanaconda_jsonp',
+            js: this.backupHttpServerRoot + "exec_js_jsonp",
+            ts: this.backupHttpServerRoot + "exec_ts_jsonp",
         };
         if (supports_html5_storage()) {
             // generate a unique UUID per "user" (as indicated by a single browser
@@ -22082,10 +22046,10 @@ var AbstractBaseFrontend = /** @class */ (function () {
             // addresses due to sharing of IP addresses within, say, a school
             // computer lab)
             // added on 2015-01-27 for more precise user identification
-            if (!localStorage.getItem('opt_uuid')) {
-                localStorage.setItem('opt_uuid', generateUUID());
+            if (!localStorage.getItem("opt_uuid")) {
+                localStorage.setItem("opt_uuid", generateUUID());
             }
-            this.userUUID = localStorage.getItem('opt_uuid');
+            this.userUUID = localStorage.getItem("opt_uuid");
             pytutor_1.assert(this.userUUID);
         }
         else {
@@ -22109,7 +22073,9 @@ var AbstractBaseFrontend = /** @class */ (function () {
             //   </html>
             //
             // Note that you'll probably need to customize this check for your server.
-            if (jqxhr && jqxhr.responseText && jqxhr.responseText.indexOf('414') >= 0) {
+            if (jqxhr &&
+                jqxhr.responseText &&
+                jqxhr.responseText.indexOf("414") >= 0) {
                 // ok this is an UBER UBER hack. If this happens just once, then
                 // force click the "Visualize Execution" button again and re-try.
                 // why? what's the difference the second time around? the diffs_json
@@ -22124,31 +22090,41 @@ var AbstractBaseFrontend = /** @class */ (function () {
                     $("#executeBtn").click();
                 }
                 else {
-                    _this.setFronendError(["Server error! Your code might be too long for this tool. Shorten your code and re-try. [#CodeTooLong]"]);
+                    _this.setFronendError([
+                        "Server error! Your code might be too long for this tool. Shorten your code and re-try. [#CodeTooLong]",
+                    ]);
                     _this.num414Tries = 0; // reset this to 0 AFTER setFronendError so that in setFronendError we can know that it's a 414 error (super hacky!)
                 }
             }
             else {
-                _this.setFronendError(["Server error! Your code might have an INFINITE LOOP or be running for too long.",
-                    "The server may also be OVERLOADED. Or you're behind a FIREWALL that blocks access."]);
+                _this.setFronendError([
+                    "Server error! Your code might have an INFINITE LOOP or be running for too long.",
+                    "The server may also be OVERLOADED. Or you're behind a FIREWALL that blocks access.",
+                ]);
             }
             _this.doneExecutingCode();
         });
         this.clearFrontendError();
         $("#embedLinkDiv").hide();
         $("#executeBtn")
-            .attr('disabled', false)
+            .attr("disabled", false)
             .click(this.executeCodeFromScratch.bind(this));
     }
-    AbstractBaseFrontend.prototype.ignoreAjaxError = function (settings) { return false; }; // subclasses should override
+    AbstractBaseFrontend.prototype.ignoreAjaxError = function (settings) {
+        return false;
+    }; // subclasses should override
     // empty stub so that our code doesn't crash.
     // TODO: override this with a version in codeopticon-learner.js if needed
     AbstractBaseFrontend.prototype.logEventCodeopticon = function (obj) { }; // NOP
-    AbstractBaseFrontend.prototype.getAppState = function () { return {}; }; // NOP -- subclasses need to override
+    AbstractBaseFrontend.prototype.getAppState = function () {
+        return {};
+    }; // NOP -- subclasses need to override
     AbstractBaseFrontend.prototype.setFronendError = function (lines, ignoreLog) {
         if (ignoreLog === void 0) { ignoreLog = false; }
-        $("#frontendErrorOutput").html(lines.map(pytutor_1.htmlspecialchars).join('<br/>') +
-            (ignoreLog ? '' : '<p/>Review code for errors. It is possible this may be due to unsupported features'));
+        $("#frontendErrorOutput").html(lines.map(pytutor_1.htmlspecialchars).join("<br/>") +
+            (ignoreLog
+                ? ""
+                : "<p/>Review code for errors. It is possible this may be due to unsupported features"));
         // (ignoreLog ? '' : '<p/>Read this list of <a target="_blank" href="https://github.com/pgbovine/OnlinePythonTutor/blob/master/unsupported-features.md">UNSUPPORTED FEATURES</a>'));
         // log it to the server as well (unless ignoreLog is on)
         if (!ignoreLog) {
@@ -22163,54 +22139,61 @@ var AbstractBaseFrontend = /** @class */ (function () {
             // when you run error_log.py!!! this relies on this.num414Tries not
             // being reset yet at this point:
             if (this.num414Tries > 0) {
-                myArgs.code = '#CodeTooLong: ' + String(myArgs.code.length) + ' bytes';
+                myArgs.code =
+                    "#CodeTooLong: " + String(myArgs.code.length) + " bytes";
             }
-            $.get('error_log.py', myArgs, function (dat) { }); // added this logging feature on 2018-02-18
+            $.get("error_log.py", myArgs, function (dat) { }); // added this logging feature on 2018-02-18
         }
     };
     AbstractBaseFrontend.prototype.clearFrontendError = function () {
-        $("#frontendErrorOutput").html('');
+        $("#frontendErrorOutput").html("");
     };
     // parsing the URL query string hash
     AbstractBaseFrontend.prototype.getQueryStringOptions = function () {
-        var ril = $.bbq.getState('rawInputLstJSON');
-        var testCasesLstJSON = $.bbq.getState('testCasesJSON');
+        var ril = $.bbq.getState("rawInputLstJSON");
+        var testCasesLstJSON = $.bbq.getState("testCasesJSON");
         // note that any of these can be 'undefined'
-        return { preseededCode: $.bbq.getState('code'),
-            preseededCurInstr: Number($.bbq.getState('curInstr')),
-            verticalStack: $.bbq.getState('verticalStack'),
-            appMode: $.bbq.getState('mode'),
-            py: $.bbq.getState('py'),
-            cumulative: $.bbq.getState('cumulative'),
-            heapPrimitives: $.bbq.getState('heapPrimitives'),
-            textReferences: $.bbq.getState('textReferences'),
+        return {
+            preseededCode: $.bbq.getState("code"),
+            preseededCurInstr: Number($.bbq.getState("curInstr")),
+            verticalStack: $.bbq.getState("verticalStack"),
+            appMode: $.bbq.getState("mode"),
+            py: $.bbq.getState("py"),
+            cumulative: $.bbq.getState("cumulative"),
+            heapPrimitives: $.bbq.getState("heapPrimitives"),
+            textReferences: $.bbq.getState("textReferences"),
             rawInputLst: ril ? $.parseJSON(ril) : undefined,
-            demoMode: $.bbq.getState('demo'),
-            codcastFile: $.bbq.getState('codcast'),
-            codeopticonSession: $.bbq.getState('cosession'),
-            codeopticonUsername: $.bbq.getState('couser'),
-            testCasesLst: testCasesLstJSON ? $.parseJSON(testCasesLstJSON) : undefined
+            demoMode: $.bbq.getState("demo"),
+            codcastFile: $.bbq.getState("codcast"),
+            codeopticonSession: $.bbq.getState("cosession"),
+            codeopticonUsername: $.bbq.getState("couser"),
+            testCasesLst: testCasesLstJSON
+                ? $.parseJSON(testCasesLstJSON)
+                : undefined,
         };
     };
     AbstractBaseFrontend.prototype.redrawConnectors = function () {
         if (this.myVisualizer &&
-            (this.appMode == 'display' ||
-                this.appMode == 'visualize' /* deprecated */)) {
+            (this.appMode == "display" ||
+                this.appMode == "visualize") /* deprecated */) {
             this.myVisualizer.redrawConnectors();
         }
     };
     AbstractBaseFrontend.prototype.getBaseBackendOptionsObj = function () {
-        var ret = { cumulative_mode: ($('#cumulativeModeSelector').val() == 'true'),
-            heap_primitives: ($('#heapPrimitivesSelector').val() == 'true'),
+        var ret = {
+            cumulative_mode: $("#cumulativeModeSelector").val() == "true",
+            heap_primitives: $("#heapPrimitivesSelector").val() == "true",
             show_only_outputs: false,
-            origin: this.originFrontendJsFile };
+            origin: this.originFrontendJsFile,
+        };
         return ret;
     };
     AbstractBaseFrontend.prototype.getBaseFrontendOptionsObj = function () {
         var ret = {
-            disableHeapNesting: (($('#heapPrimitivesSelector').val() == 'true') ||
-                ($('#heapPrimitivesSelector').val() == 'nevernest')),
-            textualMemoryLabels: ($('#textualMemoryLabelsSelector').val() == 'true'),
+            // tricky: selector 'true' and 'false' values are strings!
+            disableHeapNesting: $("#heapPrimitivesSelector").val() == "true" ||
+                $("#heapPrimitivesSelector").val() == "nevernest",
+            textualMemoryLabels: $("#textualMemoryLabelsSelector").val() == "true",
             executeCodeWithRawInputFunc: this.executeCodeWithRawInput.bind(this),
             // always use the same visualizer ID for all
             // instantiated ExecutionVisualizer objects,
@@ -22218,14 +22201,14 @@ var AbstractBaseFrontend = /** @class */ (function () {
             // multiple clients using TogetherJS in shared sessions.
             // this shouldn't lead to problems since only ONE
             // ExecutionVisualizer will be shown at a time
-            visualizerIdOverride: '1',
+            visualizerIdOverride: "1",
             updateOutputCallback: this.updateOutputCallbackFunc.bind(this),
             startingInstruction: 0,
         };
         return ret;
     };
     AbstractBaseFrontend.prototype.updateOutputCallbackFunc = function () {
-        $('#urlOutput,#urlOutputShortened,#embedCodeOutput').val('');
+        $("#urlOutput,#urlOutputShortened,#embedCodeOutput").val("");
     };
     AbstractBaseFrontend.prototype.executeCodeFromScratch = function () {
         this.rawInputLst = []; // reset!
@@ -22237,13 +22220,13 @@ var AbstractBaseFrontend = /** @class */ (function () {
     };
     AbstractBaseFrontend.prototype.startExecutingCode = function (startingInstruction) {
         if (startingInstruction === void 0) { startingInstruction = 0; }
-        $('#executeBtn').html("Please wait ... executing (takes up to 10 seconds)");
-        $('#executeBtn').attr('disabled', true);
+        $("#executeBtn").html("Please wait ... executing (takes up to 10 seconds)");
+        $("#executeBtn").attr("disabled", true);
         this.isExecutingCode = true;
     };
     AbstractBaseFrontend.prototype.doneExecutingCode = function () {
-        $('#executeBtn').html("Visualize Execution");
-        $('#executeBtn').attr('disabled', false);
+        $("#executeBtn").html("Visualize Execution");
+        $("#executeBtn").attr("disabled", false);
         this.isExecutingCode = false;
     };
     // execute codeToExec and create a new ExecutionVisualizer
@@ -22254,8 +22237,8 @@ var AbstractBaseFrontend = /** @class */ (function () {
             var trace = dataFromBackend.trace;
             // don't enter visualize mode if there are killer errors:
             if (!trace ||
-                (trace.length == 0) ||
-                (trace[trace.length - 1].event == 'uncaught_exception')) {
+                trace.length == 0 ||
+                trace[trace.length - 1].event == "uncaught_exception") {
                 _this.handleUncaughtException(trace);
                 if (trace.length == 1) {
                     _this.setFronendError([trace[0].exception_msg]);
@@ -22264,8 +22247,10 @@ var AbstractBaseFrontend = /** @class */ (function () {
                     _this.setFronendError([trace[trace.length - 1].exception_msg]);
                 }
                 else {
-                    _this.setFronendError(["Unknown error: The server may be OVERLOADED right now; try again later.",
-                        "Your code may also contain UNSUPPORTED FEATURES that this tool cannot handle."]);
+                    _this.setFronendError([
+                        "Unknown error: The server may be OVERLOADED right now; try again later.",
+                        "Your code may also contain UNSUPPORTED FEATURES that this tool cannot handle.",
+                    ]);
                 }
             }
             else {
@@ -22311,20 +22296,11 @@ var AbstractBaseFrontend = /** @class */ (function () {
         this.clearFrontendError();
         this.startExecutingCode(frontendOptionsObj.startingInstruction);
         frontendOptionsObj.lang = pyState;
-        // kludgy exceptions
-        if (pyState === '2') {
-            frontendOptionsObj.lang = 'py2';
-        }
-        else if (pyState === '3') {
-            frontendOptionsObj.lang = 'py3';
-        }
-        else if (pyState === 'java') {
-            // TODO: should we still keep this exceptional case?
-            frontendOptionsObj.disableHeapNesting = true; // never nest Java objects, seems like a good default
-        }
         // if we don't have any deltas, then don't bother sending deltaObj:
         // NB: not all subclasses will initialize this.deltaObj
-        var deltaObjStringified = (this.deltaObj && (this.deltaObj.deltas.length > 0)) ? JSON.stringify(this.deltaObj) : null;
+        var deltaObjStringified = this.deltaObj && this.deltaObj.deltas.length > 0
+            ? JSON.stringify(this.deltaObj)
+            : null;
         if (deltaObjStringified) {
             // if deltaObjStringified is too long, then that will likely make
             // the URL way too long. in that case, just make it null and don't
@@ -22353,16 +22329,20 @@ var AbstractBaseFrontend = /** @class */ (function () {
         }
         // everything below here is an ajax (async) call to the server ...
         if (jsonp_endpoint) {
-            pytutor_1.assert(pyState !== '2' && pyState !== '3');
+            pytutor_1.assert(pyState === "js" || pyState === "ts");
             // 2018-08-19: this is an uncommon use case (only used for https iframe embedding)
-            if (jsonp_endpoint.indexOf('https:') == 0) {
+            if (jsonp_endpoint.indexOf("https:") == 0) {
                 // this.setFronendError(["Error: https execution of non-Python code is not currently supported. [#nonPythonHttps]"]);
                 // this.doneExecutingCode();
                 // return;
             }
             var retryOnBackupServer = function () {
                 // first log a #TryBackup error entry:
-                _this.setFronendError(["Main server is busy or has errors; re-trying using backup server " + _this.backupHttpServerRoot + " ... [#TryBackup]"]);
+                _this.setFronendError([
+                    "Main server is busy or has errors; re-trying using backup server " +
+                        _this.backupHttpServerRoot +
+                        " ... [#TryBackup]",
+                ]);
                 // now re-try the query using the backup server:
                 var backup_jsonp_endpoint = _this.langSettingToJsonpEndpointBackup[pyState];
                 pytutor_1.assert(backup_jsonp_endpoint);
@@ -22371,20 +22351,25 @@ var AbstractBaseFrontend = /** @class */ (function () {
                     // The name of the callback parameter, as specified by the YQL service
                     jsonp: "callback",
                     dataType: "jsonp",
-                    data: { user_script: codeToExec,
+                    data: {
+                        user_script: codeToExec,
                         options_json: JSON.stringify(backendOptionsObj),
-                        raw_input_json: _this.rawInputLst.length > 0 ? JSON.stringify(_this.rawInputLst) : null,
+                        raw_input_json: _this.rawInputLst.length > 0
+                            ? JSON.stringify(_this.rawInputLst)
+                            : null,
                     },
-                    success: callbackWrapper
+                    success: callbackWrapper,
                 });
             };
             // for non-python, this should be a dummy script for logging
             // only, and to check whether there's a 414 error for #CodeTooLong
-            $.get(backendScript, { user_script: codeToExec,
+            $.get(backendScript, {
+                user_script: codeToExec,
                 options_json: JSON.stringify(backendOptionsObj),
                 user_uuid: this.userUUID,
                 session_uuid: this.sessionUUID,
-                diffs_json: deltaObjStringified }, function (dat) {
+                diffs_json: deltaObjStringified,
+            }, function (dat) {
                 // this is super important! only if this first call is a
                 // SUCCESS do we actually make the REAL call using JSONP.
                 // the reason why is that we might get a 414 error for
@@ -22403,9 +22388,12 @@ var AbstractBaseFrontend = /** @class */ (function () {
                     // The name of the callback parameter, as specified by the YQL service
                     jsonp: "callback",
                     dataType: "jsonp",
-                    data: { user_script: codeToExec,
+                    data: {
+                        user_script: codeToExec,
                         options_json: JSON.stringify(backendOptionsObj),
-                        raw_input_json: _this.rawInputLst.length > 0 ? JSON.stringify(_this.rawInputLst) : null,
+                        raw_input_json: _this.rawInputLst.length > 0
+                            ? JSON.stringify(_this.rawInputLst)
+                            : null,
                     },
                     success: function (dataFromBackend) {
                         var trace = dataFromBackend.trace;
@@ -22415,13 +22403,13 @@ var AbstractBaseFrontend = /** @class */ (function () {
                         // RETRY with backupHttpServerRoot. otherwise let it
                         // through to callbackWrapper
                         if (!trace ||
-                            (trace.length == 0) ||
-                            (trace[trace.length - 1].event == 'uncaught_exception')) {
+                            trace.length == 0 ||
+                            trace[trace.length - 1].event == "uncaught_exception") {
                             if (trace.length == 1) {
                                 // we should only retry if there's a legit
                                 // backend error and not just a syntax error:
                                 var msg = trace[0].exception_msg;
-                                if (msg.indexOf('#BackendError') >= 0) {
+                                if (msg.indexOf("#BackendError") >= 0) {
                                     shouldRetry = true;
                                 }
                             }
@@ -22431,7 +22419,7 @@ var AbstractBaseFrontend = /** @class */ (function () {
                         }
                         // don't bother re-trying for https since we don't
                         // currently have an https backup server
-                        if (window.location.protocol === 'https:') {
+                        if (window.location.protocol === "https:") {
                             shouldRetry = false;
                         }
                         if (shouldRetry) {
@@ -22452,14 +22440,11 @@ var AbstractBaseFrontend = /** @class */ (function () {
             }, "text");
         }
         else {
-            // for Python 2 or 3, directly execute backendScript
-            pytutor_1.assert(pyState === '2' || pyState === '3');
-            $.get(backendScript, { user_script: codeToExec,
-                raw_input_json: this.rawInputLst.length > 0 ? JSON.stringify(this.rawInputLst) : '',
-                options_json: JSON.stringify(backendOptionsObj),
-                user_uuid: this.userUUID,
-                session_uuid: this.sessionUUID,
-                diffs_json: deltaObjStringified }, callbackWrapper, "json");
+            // This should not happen for JS/TS since they use JSONP endpoints
+            this.setFronendError([
+                "Error: Direct backend execution not supported for this language",
+            ]);
+            this.doneExecutingCode();
         }
     };
     // manage traceCache
@@ -22491,7 +22476,7 @@ var AbstractBaseFrontend = /** @class */ (function () {
             }
         }
         this.traceCache.push([appState, this.myVisualizer.curTrace]);
-        console.log('traceCacheAdd', this.traceCache);
+        console.log("traceCacheAdd", this.traceCache);
     };
     AbstractBaseFrontend.prototype.traceCacheGet = function (appState) {
         for (var i = 0; i < this.traceCache.length; i++) {
@@ -22508,7 +22493,7 @@ var AbstractBaseFrontend = /** @class */ (function () {
     AbstractBaseFrontend.prototype.setSurveyHTML = function () {
         // use ${this.userUUID} within the string ...
         var survey_v14 = "\n    <p style=\"font-size: 9pt; margin-top: 12px; margin-bottom: 15px; line-height: 150%;\">\n\n    Help improve this tool by completing a <a style=\"font-size: 10pt; font-weight: bold;\" href=\"https://docs.google.com/forms/d/e/1FAIpQLSfQJP1ojlv8XzXAvHz0al-J_Hs3GQu4XeblxT8EzS8dIzuaYA/viewform?entry.956368502=" + this.userUUID + "\" target=\"_blank\">short user survey</a>\n    </p>";
-        $('#surveyPane').html(survey_v14);
+        $("#surveyPane").html(survey_v14);
     };
     return AbstractBaseFrontend;
 }()); // END class AbstractBaseFrontend
@@ -22582,25 +22567,24 @@ v14: very similar to v13 (deployed on 2018-03-11)
 // From http://stackoverflow.com/a/8809472
 function generateUUID() {
     var d = new Date().getTime();
-    var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+    var uuid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
         var r = (d + Math.random() * 16) % 16 | 0;
         d = Math.floor(d / 16);
-        return (c == 'x' ? r : (r & 0x7 | 0x8)).toString(16);
+        return (c == "x" ? r : (r & 0x7) | 0x8).toString(16);
     });
     return uuid;
 }
 exports.generateUUID = generateUUID;
-;
 // Adapted from http://diveintohtml5.info/storage.html
 function supports_html5_storage() {
     try {
-        if ('localStorage' in window && window['localStorage'] !== null) {
+        if ("localStorage" in window && window["localStorage"] !== null) {
             // From: http://stackoverflow.com/questions/21159301/
             // Safari before v11, in Private Browsing Mode, looks like it supports localStorage but all calls to
             // setItem throw QuotaExceededError.  Making these calls in the try block will detect that situation
             // with the catch below, returning false.
-            localStorage.setItem('_localStorage_test', '1');
-            localStorage.removeItem('_localStorage_test');
+            localStorage.setItem("_localStorage_test", "1");
+            localStorage.removeItem("_localStorage_test");
             return true;
         }
         else {
@@ -22619,7 +22603,7 @@ exports.supports_html5_storage = supports_html5_storage;
 /* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var content = __webpack_require__(34);
+var content = __webpack_require__(33);
 
 if (typeof content === 'string') {
   content = [[module.i, content, '']];
@@ -22630,7 +22614,7 @@ var options = {}
 options.insert = "head";
 options.singleton = false;
 
-var update = __webpack_require__(3)(content, options);
+var update = __webpack_require__(2)(content, options);
 
 if (content.locals) {
   module.exports = content.locals;
@@ -22638,8 +22622,7 @@ if (content.locals) {
 
 
 /***/ }),
-/* 31 */,
-/* 32 */
+/* 31 */
 /***/ (function(module, exports) {
 
 (function(){function diff_match_patch(){this.Diff_Timeout=1;this.Diff_EditCost=4;this.Match_Threshold=0.5;this.Match_Distance=1E3;this.Patch_DeleteThreshold=0.5;this.Patch_Margin=4;this.Match_MaxBits=32}
@@ -22694,7 +22677,7 @@ this.diff_match_patch=diff_match_patch;this.DIFF_DELETE=-1;this.DIFF_INSERT=1;th
 
 
 /***/ }),
-/* 33 */
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(jQuery) {/*
@@ -22709,15 +22692,16 @@ this.diff_match_patch=diff_match_patch;this.DIFF_DELETE=-1;this.DIFF_INSERT=1;th
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 34 */
+/* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(2)(false);
+exports = module.exports = __webpack_require__(1)(false);
 // Module
 exports.push([module.i, "/* CSS accompanying ../visualize.html */\n\n.dashboard-title {\n    margin: 0;\n    /* color: #828c96; */\n    font-family: 'Work Sans',-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif;\n    font-size: 28px;\n}\n\n.eyebrow {\n    text-transform: uppercase;\n    color: #828c96;\n    margin-bottom: 0;\n    font-size: 16px;\n}\n\n.s4 {\n    height: 40px;\n}\n\n.title-container {\n    max-width: 700px;\n    margin-left: auto;\n    margin-right: auto;\n}\n\nbody {\n    background-color: #edeff0;\n    font-family: 'Work Sans', verdana, arial, helvetica, sans-serif;\n    margin: 0px;\n  /* font-size: 10pt; */\n}\n\na,\na:visited,\na:hover {\n  color: #3D58A2;\n}\n\nspan {\n  padding: 0px;\n}\n\n#optionsPane {\n  margin-top: 15px;\n  margin-bottom: 20px;\n  line-height: 150%;\n}\n\n#pyOutputPane {\n  position: relative;\n/* top: 50%; */\n/* left: 50%; */\n/* transform: translate(-50%, -50%); */\n  /* background-color: #ffff; */\n  border-radius: 8px;\n  display: block;\n  /* overflow: auto; */\n  margin-top: 6%;\n  margin-bottom: 6%;\n  margin-left: 2%;\n  margin-right: 2%;\n}\n\n#pyInputPane, #loadingPane {\n  max-width: 700px;\n  margin-left: auto;\n  margin-right: auto;\n  margin-top: 6%;\n  margin-bottom: 6%;\n\n}\n\n#loadingPane {\n  margin-bottom: 5px;\n}\n\n#codeInputPane {\n  margin-top: 5px;\n  font-size: 12pt;\n  border: 1px solid #ddd;\n}\n\n#codeInputWarnings {\n  margin-bottom: 8px;\n}\n\nbutton.smallBtn {\n  font-size: 10pt;\n  padding: 3px;\n}\n\nbutton.bigBtn {\n  cursor: pointer;\n  display: block;\n  background: #0050ff;\n  color: #fff;\n  margin: 0 auto;\n  padding: .3rem .6rem .4rem .5rem;\n  border: 0;\n  border-radius: 8px;\n  font-size: 18px;\n}\n\nbutton.surveyBtn {\n  font-size: 8pt;\n  margin-top: 8px;\n}\n\nbutton.surveyBtnBig {\n  font-size: 11pt;\n  padding: 5px;\n  margin-top: 0px;\n}\n\n#footer {\n  color: #999;\n  font-size: 9pt;\n  border-top: 1px solid #bbbbbb;\n  padding-top: 5px;\n  margin-top: 5px;\n\n  max-width: 700px;\n  /* center align */\n  margin-left: auto;\n  margin-right: auto;\n}\n\n#frontendErrorOutput {\n  color: #e93f34; /* should match brightRed JavaScript variable */\n  font-size: 12pt;\n  line-height: 1.5em;\n  margin-top: 8px;\n}\n\n.togetherjsBtn {\n  /*color: #b80000;*/\n  color: #e93f34;\n  font-size: 9pt;\n  padding: 4px;\n  margin-top: 3px;\n}\n\n/* make this a fixed size with scrollbars for overflow so that the UI doesn't jitter up and down */\n#publicHelpQueue {\n  overflow: auto;\n  height: 95px;\n  margin-bottom: 15px;\n  margin-left: 10px;\n}\n\n.helpQueueSmallText {\n  color: #777;\n  font-size: 8pt;\n}\n\n.redBold {\n  font-weight: bold;\n  color: #e93f34;\n}\n\n#stopRequestHelpBtn {\n  font-size: 9pt;\n  padding: 2px;\n}\n\n#moderationPanel {\n  font-size: 11pt;\n  margin-bottom: 5pt;\n  min-height: 16pt; /* just so things don't jiggle around vertically too much */\n  padding-top: 6px;\n  padding-bottom: 6px;\n  padding-left: 6px;\n  padding-right: 6px;\n  border: 1px solid #e93f34;\n}\n\n.kickLink {\n  font-size: 10pt;\n  margin-right: 4px;\n}\n\n\n#syncBtn {\n font-size: 8pt;\n margin-left: 0px;\n}\n\n#experimentalHeader {\n}\n\n#surveyHeader {\n  margin-left: 100px;\n}\n\n.surveyQ {\n  font-size: 9pt;\n  padding: 2px;\n}\n\n/* necessary for CodeMirror error line highlighting to work! */\n.CodeMirror .errorLine { background: #ffff3f !important; }\n\n\n/* from http://rog.ie/blog/css-star-rater */\n.star-rating {\n  font-size: 0;\n  white-space: nowrap;\n  display: inline-block;\n  /* pgbovine - scale this appropriately with a 5:1 ratio */\n  width: 100px;\n  height: 20px;\n  overflow: hidden;\n  position: relative;\n  background: url('data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4IiB3aWR0aD0iMjBweCIgaGVpZ2h0PSIyMHB4IiB2aWV3Qm94PSIwIDAgMjAgMjAiIGVuYWJsZS1iYWNrZ3JvdW5kPSJuZXcgMCAwIDIwIDIwIiB4bWw6c3BhY2U9InByZXNlcnZlIj48cG9seWdvbiBmaWxsPSIjREREREREIiBwb2ludHM9IjEwLDAgMTMuMDksNi41ODMgMjAsNy42MzkgMTUsMTIuNzY0IDE2LjE4LDIwIDEwLDE2LjU4MyAzLjgyLDIwIDUsMTIuNzY0IDAsNy42MzkgNi45MSw2LjU4MyAiLz48L3N2Zz4=');\n  background-size: contain;\n}\n.star-rating i {\n  opacity: 0;\n  position: absolute;\n  left: 0;\n  top: 0;\n  height: 100%;\n  width: 20%;\n  z-index: 1;\n  background: url('data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4IiB3aWR0aD0iMjBweCIgaGVpZ2h0PSIyMHB4IiB2aWV3Qm94PSIwIDAgMjAgMjAiIGVuYWJsZS1iYWNrZ3JvdW5kPSJuZXcgMCAwIDIwIDIwIiB4bWw6c3BhY2U9InByZXNlcnZlIj48cG9seWdvbiBmaWxsPSIjRkZERjg4IiBwb2ludHM9IjEwLDAgMTMuMDksNi41ODMgMjAsNy42MzkgMTUsMTIuNzY0IDE2LjE4LDIwIDEwLDE2LjU4MyAzLjgyLDIwIDUsMTIuNzY0IDAsNy42MzkgNi45MSw2LjU4MyAiLz48L3N2Zz4=');\n  background-size: contain;\n}\n.star-rating input {\n  -moz-appearance: none;\n  -webkit-appearance: none;\n  opacity: 0;\n  display: inline-block;\n  width: 20%;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  z-index: 2;\n  position: relative;\n}\n.star-rating input:hover + i,\n.star-rating input:checked + i {\n  opacity: 1;\n}\n.star-rating i ~ i {\n  width: 40%;\n}\n.star-rating i ~ i ~ i {\n  width: 60%;\n}\n.star-rating i ~ i ~ i ~ i {\n  width: 80%;\n}\n.star-rating i ~ i ~ i ~ i ~ i {\n  width: 100%;\n}\n\n\n#syntaxErrBubbleContents {\n  font-size: 9.5pt;\n  cursor: default;\n}\n\n#syntaxErrHeader {\n  margin-bottom: 3pt;\n}\n\n#syntaxErrCodeDisplay {\n  border: 1px solid #ddd;\n}\n\n#syntaxErrMsg {\n  color: #e93f34; /* should match brightRed JavaScript variable */\n  font-size: 10pt;\n  margin-top: 3pt;\n  margin-bottom: 2pt;\n}\n\n#syntaxErrQuestion {\n  margin-top: 12px;\n}\n\n#syntaxErrTxtInput {\n  margin-top: 3px;\n  margin-bottom: 6px;\n  padding: 2px;\n}\n\n#syntaxErrSubmitBtn, #syntaxErrCloseBtn {\n  margin-right: 8px;\n}\n\n#syntaxErrHideAllLink {\n  font-size: 8pt;\n}\n\n#testCasesPane {\n margin-top: 5px;\n padding-bottom: 5px;\n}\n\n#exampleSnippets {\n border-top: 1px solid #ccc;\n margin-top: 15px;\n}\n\n#showExampleLink {\n  margin-top: 15px;\n}\n\n#instructionsPane {\n margin-bottom: 10px;\n}\n\n/* for SyntaxErrorSurveyBubble */\n\ntextarea.bubbleInputText {\n  font-family: verdana, arial, helvetica, sans-serif;\n\tfont-size: 9pt;\n\tline-height: 1.3em;\n}\n\n.qtip-content {\n\tcolor: #333;\n\tbackground-color: #ffffff;\n\n\tmax-width: 390px;\n\twidth: 390px;\n\n\tborder: 2px solid #e93f34;\n\n  cursor: pointer;\n\n\t*border-right-width: 2px;\n\t*border-bottom-width: 2px;\n\n\t-webkit-border-radius: 5px;\n\t-moz-border-radius: 5px;\n\tborder-radius: 5px;\n\n\t-webkit-box-shadow: 2px 2px 3px 0px rgba(0, 0, 0, 0.2);\n\t-moz-box-shadow: 2px 2px 3px 0px rgba(0, 0, 0, 0.2);\n\tbox-shadow: 2px 2px 3px 0px rgba(0, 0, 0, 0.2);\n\n\t-webkit-background-clip: padding-box;\n\t-moz-background-clip: padding;\n\tbackground-clip: padding-box;\n}\n", ""]);
 
 
 /***/ }),
+/* 34 */,
 /* 35 */,
 /* 36 */,
 /* 37 */,

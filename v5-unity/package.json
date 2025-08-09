@@ -1,15 +1,15 @@
 {
-  "name": "v5-unity",
-  "version": "1.0.0",
-  "description": "OPT v5",
+  "name": "interactive-coding-tutor-frontend",
+  "version": "2.0.0",
+  "description": "Interactive JavaScript/TypeScript Code Visualization Tool - Frontend",
   "main": "bundle.js",
-  "repository": "https://github.com/pgbovine/OnlinePythonTutor",
+  "repository": "https://github.com/pertrai1/interactive-coding-tutor",
   "license": "BSD-3-Clause",
   "scripts": {
-    "start": "python bottle_server.py",
+    "start": "python3 bottle_server.py",
     "py3start": "python3 bottle_server.py",
     "webpack": "webpack --devtool sourcemap --progress --colors --watch",
-    "production-build": "rm -f build/* && webpack && python add_cache_busting_query_strings.py"
+    "production-build": "rm -f build/* && webpack && python3 add_cache_busting_query_strings.py"
   },
   "dependencies": {
     "@types/jquery": "^3.3.31",
