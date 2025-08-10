@@ -10,6 +10,10 @@ const babel = require('@babel/core');
 
 /**
  * Babel configuration for ES5 target compatibility
+ * 
+ * Note: This configuration prioritizes line number preservation for educational
+ * step-by-step visualization. The 'retainLines' option helps maintain accurate
+ * line numbers in transpiled code, which is crucial for showing execution flow.
  */
 const babelConfig = {
   presets: [
