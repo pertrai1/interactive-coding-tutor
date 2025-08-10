@@ -189,29 +189,46 @@ function processVariableLine(line) {
   // Handle multiple variable declarations on one line
   var processedLine = line;
 
-  // Replace var declarations with tracking
-  processedLine = processedLine.replace(
-    /var\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*/g,
-    function (match, varName) {
-      return `var ${varName} = __userVars.${varName} = `;
-    }
-  );
-
-  // Also handle assignments to existing variables (but be careful not to double-wrap)
-  if (!processedLine.includes("__userVars")) {
+  // Handle comma-separated variable declarations (common in Babel output)
+  // Split on commas but be careful about commas inside function calls or objects
+  if (processedLine.includes('var ') && processedLine.includes(',')) {
+    // Simple approach: process each assignment individually
     processedLine = processedLine.replace(
-      /\b([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*([^=])/g,
-      function (match, varName, rest) {
-        if (
-          !isBuiltinGlobal(varName) &&
-          varName !== "__userVars" &&
-          varName !== "__tracer"
-        ) {
-          return `${varName} = __userVars.${varName} = ${rest}`;
+      /\b([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*([^,;]+)/g,
+      function (match, varName, value) {
+        // Skip internal Babel variables (starting with _) and builtins
+        if (!varName.startsWith('_') && !isBuiltinGlobal(varName) && 
+            varName !== "__userVars" && varName !== "__tracer") {
+          return `${varName} = __userVars.${varName} = ${value}`;
         }
         return match;
       }
     );
+  } else {
+    // Replace simple var declarations with tracking
+    processedLine = processedLine.replace(
+      /var\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*/g,
+      function (match, varName) {
+        return `var ${varName} = __userVars.${varName} = `;
+      }
+    );
+
+    // Also handle assignments to existing variables (but be careful not to double-wrap)
+    if (!processedLine.includes("__userVars")) {
+      processedLine = processedLine.replace(
+        /\b([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*([^=])/g,
+        function (match, varName, rest) {
+          if (
+            !isBuiltinGlobal(varName) &&
+            varName !== "__userVars" &&
+            varName !== "__tracer"
+          ) {
+            return `${varName} = __userVars.${varName} = ${rest}`;
+          }
+          return match;
+        }
+      );
+    }
   }
 
   return processedLine;
