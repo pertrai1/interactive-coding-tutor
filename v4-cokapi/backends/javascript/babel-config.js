@@ -28,17 +28,13 @@ const babelConfig = {
       "@babel/preset-env",
       {
         targets: {
-          // Target Node.js 18+ for better modern JS support
-          node: "18",
+          // Target ES5 to ensure full transpilation for VM context compatibility
+          ie: "11",
         },
         // Keep modules as-is for Node.js compatibility
         modules: "commonjs",
-        // Preserve modern features that Node.js already supports
-        exclude: [
-          "transform-arrow-functions",
-          "transform-block-scoping",
-          "transform-classes",
-        ],
+        // Remove all exclusions to ensure proper transpilation in VM context
+        exclude: [],
       },
     ],
   ],
@@ -92,12 +88,11 @@ function transpileCode(code, filename = "user_script.js") {
  * @returns {boolean} - True if transpilation is likely needed
  */
 function needsTranspilation(code) {
-  // Very conservative check - only transpile if we really need to
-  // Node.js 18+ supports most modern features natively
+  // Check for modern JavaScript features that need transpilation for VM compatibility
   const modernFeatures = [
     /\bimport\s+/, // ES6 imports
     /\bexport\s+/, // ES6 exports
-    // Note: Removed arrow functions, async/await, let/const, classes as Node.js 18+ supports them
+    /\bclass\s+/, // ES6 classes (need transpilation for VM context)
   ];
 
   return modernFeatures.some((pattern) => pattern.test(code));
