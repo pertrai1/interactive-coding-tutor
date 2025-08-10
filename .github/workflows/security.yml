@@ -58,6 +58,14 @@ jobs:
             npm audit --audit-level moderate --json > ../backend-audit.json || true
           }
 
+          echo "=== JavaScript Backend (Babel) Security Audit ==="
+          cd backends/javascript
+          npm ci
+          npm audit --audit-level moderate || {
+            echo "::warning::JavaScript backend (Babel) dependencies have security vulnerabilities"
+            npm audit --audit-level moderate --json > ../../js-backend-audit.json || true
+          }
+
       - name: Python security check
         run: |
           echo "=== Python Security Check ==="

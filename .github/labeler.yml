@@ -19,6 +19,21 @@ backend:
   - "v4-cokapi/package.json"
   - "v4-cokapi/Dockerfile"
 
+# JavaScript backend with Babel
+babel:
+  - "v4-cokapi/backends/javascript/**/*"
+  - "v4-cokapi/backends/javascript/babel-config.js"
+  - "v4-cokapi/backends/javascript/package.json"
+  - "**/.babelrc*"
+  - "**/babel.config.*"
+
+# Modern JavaScript features
+modern-js:
+  - "v4-cokapi/backends/javascript/**/*"
+  - "**/*es6*"
+  - "**/*es2*"
+  - "**/*modern*"
+
 # Python changes
 python:
   - "**/*.py"

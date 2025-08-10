@@ -54,6 +54,119 @@ jobs:
             echo "::warning::Large asset detected: $file ($(du -h "$file" | cut -f1))"
           done || echo "No large assets found"
 
+  babel-performance:
+    name: Babel Transpilation Performance
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Install JavaScript backend dependencies
+        working-directory: ./v4-cokapi/backends/javascript
+        run: npm ci
+
+      - name: Test Babel transpilation performance
+        working-directory: ./v4-cokapi/backends/javascript
+        run: |
+          echo "=== Babel Transpilation Performance Test ==="
+
+          node -e "
+          const babel = require('@babel/core');
+          const fs = require('fs');
+
+          // Create test files of varying sizes
+          const testCodes = [
+            // Small modern JS snippet
+            \`
+            const fetchData = async (url) => {
+              const response = await fetch(url);
+              const data = await response.json();
+              return data?.results ?? [];
+            };
+            \`,
+
+            // Medium complexity modern JS
+            \`
+            class DataProcessor {
+              constructor(options = {}) {
+                this.config = { timeout: 5000, ...options };
+              }
+
+              async process(items) {
+                const results = await Promise.allSettled(
+                  items.map(async (item) => {
+                    const processed = await this.transformItem(item);
+                    return processed?.value ?? null;
+                  })
+                );
+
+                return results
+                  .filter(result => result.status === 'fulfilled')
+                  .map(result => result.value)
+                  .filter(Boolean);
+              }
+
+              async transformItem(item) {
+                // Simulate async processing
+                return new Promise(resolve => {
+                  setTimeout(() => resolve({ value: item?.data ?? 'default' }), 10);
+                });
+              }
+            }
+            \`,
+
+            // Large modern JS with many ES6+ features
+            \`
+            ${'const largeCode = [1,2,3,4,5];'.repeat(100)}
+
+            const processor = new Map();
+            const results = [];
+
+            for (let i = 0; i < 100; i++) {
+              const handler = (data) => ({ ...data, processed: true });
+              processor.set(i, handler);
+              results.push(...largeCode.map(x => x * 2));
+            }
+            \`
+          ];
+
+          console.log('Testing Babel transpilation performance...');
+
+          testCodes.forEach((code, index) => {
+            const start = process.hrtime.bigint();
+
+            try {
+              const result = babel.transformSync(code, {
+                presets: [['@babel/preset-env', {
+                  targets: { ie: '9' }
+                }]],
+                sourceMaps: true,
+                retainLines: true
+              });
+
+              const end = process.hrtime.bigint();
+              const duration = Number(end - start) / 1000000; // Convert to milliseconds
+
+              console.log(\`✅ Test \${index + 1}: \${duration.toFixed(2)}ms (\${code.length} chars)\`);
+
+              if (duration > 1000) {
+                console.log(\`⚠️  Warning: Transpilation took \${duration.toFixed(2)}ms\`);
+              }
+
+            } catch (error) {
+              console.log(\`❌ Test \${index + 1} failed: \${error.message}\`);
+              process.exit(1);
+            }
+          });
+
+          console.log('✅ Babel performance tests completed');
+          "
+
   lighthouse-audit:
     name: Lighthouse Performance Audit
     runs-on: ubuntu-latest

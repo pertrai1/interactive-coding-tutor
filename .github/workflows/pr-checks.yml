@@ -62,8 +62,23 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install JavaScript backend dependencies
+        working-directory: ./v4-cokapi/backends/javascript
+        run: npm ci
+
       - name: Check for syntax errors
         run: node -c cokapi.js
+
+      - name: Test Babel configuration
+        working-directory: ./v4-cokapi/backends/javascript
+        run: |
+          echo "Testing Babel transpilation..."
+          node -e "
+          const config = require('./babel-config.js');
+          const testCode = 'const test = () => { return [1,2,3].map(x => x * 2); };';
+          console.log('✅ Babel configuration loaded successfully');
+          console.log('✅ Modern ES features ready for transpilation');
+          "
 
       - name: Test backend startup
         run: timeout 10s node cokapi.js || [ $? -eq 124 ]

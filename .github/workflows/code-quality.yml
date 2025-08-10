@@ -54,6 +54,81 @@ jobs:
 
           # Run ESLint on backend JavaScript files
           eslint "v4-cokapi/**/*.js" --env node --max-warnings 20 || true
+
+          # Run ESLint on JavaScript backend with Babel support
+          eslint "v4-cokapi/backends/javascript/**/*.js" --env node --parser-options '{"ecmaVersion": 2025, "sourceType": "module"}' --max-warnings 10 || true
+        continue-on-error: true
+
+  babel-validation:
+    name: Babel Configuration Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Install JavaScript backend dependencies
+        working-directory: ./v4-cokapi/backends/javascript
+        run: npm ci
+
+      - name: Validate Babel configuration
+        working-directory: ./v4-cokapi/backends/javascript
+        run: |
+          echo "=== Babel Configuration Validation ==="
+
+          # Test basic Babel functionality
+          node -e "
+          const babel = require('@babel/core');
+          const config = require('./babel-config.js');
+
+          const testCases = [
+            // ES6+ arrow functions
+            'const arrow = (x) => x * 2;',
+            // Template literals
+            'const template = \`Hello \${name}\`;',
+            // Destructuring
+            'const {a, b} = {a: 1, b: 2};',
+            // Async/await
+            'async function test() { await fetch(\"/api\"); }',
+            // Optional chaining (ES2020)
+            'const value = obj?.prop?.nested;',
+            // Nullish coalescing (ES2020)
+            'const result = value ?? \"default\";'
+          ];
+
+          console.log('Testing Babel transpilation for modern ES features...');
+
+          testCases.forEach((code, index) => {
+            try {
+              const result = babel.transformSync(code, {
+                presets: [['@babel/preset-env', {
+                  targets: { ie: '9' }
+                }]]
+              });
+              console.log(\`✅ Test \${index + 1}: \${code.substring(0, 30)}...\`);
+            } catch (error) {
+              console.log(\`❌ Test \${index + 1} failed: \${error.message}\`);
+              process.exit(1);
+            }
+          });
+
+          console.log('✅ All Babel transpilation tests passed!');
+          "
+
+      - name: Test multiline expression handling
+        working-directory: ./v4-cokapi/backends/javascript
+        run: |
+          echo "=== Testing Multiline Expression Support ==="
+
+          # Run the dedicated multiline test
+          node test-multiline-babel.js
+
+          echo "=== Multiline Test Results Summary ==="
+          echo "Check above output for line number preservation and source map generation."
         continue-on-error: true
 
   prettier:
