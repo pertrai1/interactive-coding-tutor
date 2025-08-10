@@ -1,8 +1,8 @@
-### *Python Tutor's server may go down at any time, so don't rely on it for anything time-critical.*
+### _Python Tutor's server may go down at any time, so don't rely on it for anything time-critical._
 
-### *There is no technical support available. This service is provided as-is for free.*
+### _There is no technical support available. This service is provided as-is for free._
 
-This service is maintained by one volunteer in my spare time, so I'm unable to respond to most bug reports and feature requests. Your issue is likely listed on this page. If you're sure it's *not* listed here, [email me](http://pgbovine.net/email-policy.htm) and use the "Generate permanent link" button to include a URL of your code.
+This service is maintained by one volunteer in my spare time, so I'm unable to respond to most bug reports and feature requests. Your issue is likely listed on this page. If you're sure it's _not_ listed here, [email me](http://pgbovine.net/email-policy.htm) and use the "Generate permanent link" button to include a URL of your code.
 
 - **If you don't receive a reply from me, assume that your issue will NOT be addressed**. Please do not email me multiple times.
 - I can't provide technical support for users who want to install Python Tutor locally on their own computers or host it on their own servers.
@@ -10,9 +10,10 @@ This service is maintained by one volunteer in my spare time, so I'm unable to r
 - I can't provide support for Python Tutor code that's embedded within other people's websites, such as class websites or online tutorials. Contact the people in charge of those websites for help.
 
 ---
+
 ## Unsupported features
 
-[Python Tutor](http://pythontutor.com/) currently does *not* support the following features:
+[Python Tutor](http://pythontutor.com/) currently does _not_ support the following features:
 
 <!--
 Some of these features will eventually be supported, but others probably won't, due to implementation challenges and other priorities.
@@ -38,12 +39,41 @@ For more details on project status and issue prioritization, check out these vid
 
 ### JavaScript
 
-- asynchronous event-driven code
-  - including setTimeout, setInterval, etc.
-  - promises, async/await
-- anything that operates on webpages, such as DOM manipulation, alert(), prompt(), confirm(), etc.
-- Date() object
+- **Modern ES6+ syntax features:**
+  - `const` and `let` declarations (use `var` instead)
+  - Arrow functions (`=>`) - use regular `function` declarations
+  - Template literals (backticks) - use string concatenation with `+`
+  - Destructuring assignment (`const { x } = obj`) - access properties directly
+  - Default parameters - handle defaults manually
+  - Rest/spread operators (`...`) - use traditional array/object methods
+- **Advanced language features:**
+  - Classes (`class` keyword) - use function constructors and prototypes
+  - Modules (`import`/`export`) - include all code in one file
+  - Generators and iterators
+  - Symbol primitive type
+  - BigInt primitive type
+- **Asynchronous and event-driven code:**
+  - `setTimeout`, `setInterval`, `setImmediate`
+  - Promises, `async`/`await`
+  - Event listeners and callbacks
+  - Web APIs and browser-specific features
+- **Built-in objects and methods:**
+  - `Date()` object and date manipulation
+  - Complex array methods like `find()`, `includes()`, `flatMap()`
+  - Object methods like `Object.keys()`, `Object.assign()`
+  - Map, Set, WeakMap, WeakSet collections
+- **Browser and environment features:**
+  - DOM manipulation (`document`, `window`, etc.)
+  - `alert()`, `prompt()`, `confirm()` dialogs
+  - Local storage, session storage
+  - Fetch API, XMLHttpRequest
+  - Web Workers, Service Workers
+- **Console and debugging:**
+  - Complex `console.log()` outputs may interfere with visualization
+  - `console.error()`, `console.warn()`, etc.
+  - Debugger statements
 
+**Recommended approach:** Use ES5-compatible JavaScript with simple `var` declarations, regular functions, and basic operations for best visualization results.
 
 ### Python
 
@@ -55,10 +85,9 @@ For more details on project status and issue prioritization, check out these vid
 - no 3rd-party library/module support: use the experimental "Python 3.6 with <a href="https://docs.anaconda.com/anaconda/">Anaconda</a>" mode if you want to import many more modules from the Anaconda distribution
 - (note: remember that Python 2 and 3 support slightly different kinds of language constructs)
 
-
 ### Other unsupported features (language-agnostic)
 
-- Stepping *within* a line of code to show how subexpressions get evaluated within that line
+- Stepping _within_ a line of code to show how subexpressions get evaluated within that line
 - Unicode doesn't work well in general (especially for Ruby and Python 2); use ASCII characters when possible
 - Passing in command-line arguments via argv[] array
 - Multi-threaded, concurrent, or asynchronous code
@@ -75,5 +104,6 @@ For more details on project status and issue prioritization, check out these vid
 - URL shortening (use a third-party URL shortener service)
 
 Look through these issue trackers for more known bugs and unsupported features:
+
 - https://github.com/pgbovine/OnlinePythonTutor/issues
 - https://github.com/pgbovine/opt-cpp-backend/issues

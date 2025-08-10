@@ -224,10 +224,39 @@ function exec_js_handler(
 
 // for running *natively* on localhost with modern Node.js:
 if (local) {
+  // GET endpoint for short scripts
   app.get("/exec_js_native", function (req, res) {
     res.setHeader("Access-Control-Allow-Origin", "*"); // enable CORS
 
     var usrCod = req.query.user_script;
+
+    // Use system Node.js for modern ECMAScript support (ES2025+)
+    var path = require("path");
+    var exeFile = "node"; // Use system Node.js instead of bundled v6.0.0
+    var args = [];
+    var jsloggerPath = path.join(
+      __dirname,
+      "backends/javascript/jslogger-modern.js"
+    );
+    args.push(jsloggerPath, "--jsondump=true", "--code=" + usrCod);
+
+    child_process.execFile(
+      exeFile,
+      args,
+      {
+        timeout: TIMEOUT_SECS * 1000 /* milliseconds */,
+        maxBuffer: MAX_BUFFER_SIZE,
+        killSignal: "SIGINT",
+      },
+      postExecHandler.bind(null, res, false)
+    );
+  });
+
+  // POST endpoint for longer scripts (multiline support)
+  app.post("/exec_js_native", function (req, res) {
+    res.setHeader("Access-Control-Allow-Origin", "*"); // enable CORS
+
+    var usrCod = req.body.user_script || req.query.user_script;
 
     // Use system Node.js for modern ECMAScript support (ES2025+)
     var path = require("path");
