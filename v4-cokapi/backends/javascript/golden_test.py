@@ -10,7 +10,8 @@ INPUT_FILE_EXTENSION = '.js'
 # program to run, with input file as an extra argument
 #PROGRAM = ['node', '--expose-debug-as=Debug', 'jslogger.js', '--prettydump=true']
 #PROGRAM = ['node-v6.0.0-linux-x64/bin/node', '--expose-debug-as=Debug', 'jslogger.js', '--prettydump=true']
-PROGRAM = ['node-v6.0.0-darwin-x64/bin/node', '--expose-debug-as=Debug', 'jslogger.js', '--prettydump=true']
+#PROGRAM = ['node-v6.0.0-darwin-x64/bin/node', '--expose-debug-as=Debug', 'jslogger.js', '--prettydump=true']
+PROGRAM = ['node', 'jslogger-modern.js']
 
 # this program should output to stdout, which will be redirected to this
 # extension:
@@ -37,13 +38,17 @@ def execute(input_filename):
   assert ext == INPUT_FILE_EXTENSION
 
   (stdout, stderr) = Popen(PROGRAM + [input_filename], stdout=PIPE, stderr=PIPE).communicate()
+  
+  # Decode bytes to string for Python 3
+  stdout = stdout.decode('utf-8')
+  stderr = stderr.decode('utf-8')
 
   if stderr:
-    print '(has stderr)'
-  #  print '  stderr {'
-  #  print stderr, '}'
+    print('(has stderr)')
+  #  print('  stderr {')
+  #  print(stderr, '}')
   else:
-    print
+    print()
 
   # capture stdout into outfile, filtering out machine-specific addresses
   outfile = base + OUTPUT_FILE_EXTENSION
@@ -51,7 +56,7 @@ def execute(input_filename):
 
   for line in stdout.splitlines():
     filtered_line = re.sub(' 0x.+?>', ' 0xADDR>', line)
-    print >> outf, filtered_line
+    print(filtered_line, file=outf)
 
   outf.close()
 
@@ -60,7 +65,7 @@ def clobber_golden_file(golden_file):
   (base, ext) = os.path.splitext(golden_file)
   outfile = base + OUTPUT_FILE_EXTENSION
   assert os.path.isfile(outfile)
-  print '  Clobber %s => %s' % (outfile, golden_file)
+  print('  Clobber %s => %s' % (outfile, golden_file))
   shutil.copy(outfile, golden_file)
 
 
@@ -98,13 +103,13 @@ def diff_test_output(test_name):
   for line in difflib.unified_diff(golden_s_filtered, out_s_filtered, \
                                    fromfile=golden_file, tofile=outfile):
     if first_line:
-      print # print an extra line to ease readability
+      print() # print an extra line to ease readability
       first_line = False
-    print line,
+    print(line, end='')
 
 
 def run_test(input_filename, clobber_golden=False):
-  print 'Testing', input_filename,
+  print('Testing', input_filename, end=' ')
 
   (base, ext) = os.path.splitext(input_filename)
   assert ext == INPUT_FILE_EXTENSION
@@ -120,7 +125,7 @@ def run_test(input_filename, clobber_golden=False):
   golden_file = base + GOLDEN_FILE_EXTENSION
   if os.path.isfile(golden_file):
     if golden_differs_from_out(golden_file):
-      print "  " + RED + "FAILED!!!" + ENDC
+      print("  " + RED + "FAILED!!!" + ENDC)
     if clobber_golden:
       clobber_golden_file(golden_file)
   else:
@@ -164,9 +169,9 @@ if __name__ == "__main__":
 
   if options.run_all:
     if options.clobber:
-      print 'Running all tests and clobbering results ...'
+      print('Running all tests and clobbering results ...')
     else:
-      print 'Running all tests ...'
+      print('Running all tests ...')
     run_all_tests(options.clobber)
 
   elif options.diff_all:

@@ -39,12 +39,12 @@ For more details on project status and issue prioritization, check out these vid
 
 ### JavaScript
 
-- **Modern ES6+ syntax features:**
-  - `const` and `let` declarations (use `var` instead)
-  - Arrow functions (`=>`) - use regular `function` declarations
-  - Template literals (backticks) - use string concatenation with `+`
-  - Destructuring assignment (`const { x } = obj`) - access properties directly
-  - Default parameters - handle defaults manually
+- **Modern ES6+ syntax features (✅ Now Supported via Babel):**
+  - `const` and `let` declarations ✅
+  - Arrow functions (`=>`) ✅ 
+  - Template literals (backticks) ✅
+  - Destructuring assignment (`const { x } = obj`) ✅
+  - Default parameters ✅
   - Rest/spread operators (`...`) - use traditional array/object methods
 - **Advanced language features:**
   - Classes (`class` keyword) - use function constructors and prototypes
@@ -73,7 +73,7 @@ For more details on project status and issue prioritization, check out these vid
   - `console.error()`, `console.warn()`, etc.
   - Debugger statements
 
-**Recommended approach:** Use ES5-compatible JavaScript with simple `var` declarations, regular functions, and basic operations for best visualization results.
+**Recommended approach:** Modern ES6+ JavaScript is now supported! Use arrow functions, const/let declarations, template literals, destructuring, and default parameters for enhanced code visualization. For best compatibility, avoid advanced features like classes, async/await, and modules.
 
 ### Python
 

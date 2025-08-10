@@ -16,6 +16,8 @@
   "author": "Philip Guo",
   "license": "MIT",
   "dependencies": {
+    "@babel/core": "^7.28.0",
+    "@babel/preset-env": "^7.28.0",
     "eval": "0.1.0",
     "minimist": "^1.2.0",
     "source-map": "^0.5.6",

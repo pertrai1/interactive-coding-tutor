@@ -14,6 +14,7 @@ var vm = require("vm");
 var util = require("util");
 var fs = require("fs");
 var _ = require("underscore");
+var babelConfig = require("./babel-config");
 
 var log = console.warn; // use stderr because stdout is being captured in the trace
 
@@ -86,18 +87,45 @@ function traceExecution(code) {
     stepCount = 0;
     currentLine = 1;
 
-    // Transform let/const to var for better variable tracking
-    var transformedCode = code
+    // Step 1: Babel transpilation for modern JavaScript features
+    var workingCode = code;
+    if (babelConfig.needsTranspilation(code)) {
+      var babelResult = babelConfig.transpileCode(code);
+      if (babelResult.success) {
+        workingCode = babelResult.code;
+        // TODO: Use source map for accurate line number mapping in future iterations
+      } else {
+        // Handle Babel transpilation errors
+        trace.push({
+          line: babelResult.error.line || 1,
+          event: "exception",
+          exception_msg: "Transpilation Error: " + babelResult.error.message,
+          func_name: "<module>",
+          globals: {},
+          ordered_globals: [],
+          stack_to_render: [],
+          heap: {},
+          stdout: output,
+        });
+        return {
+          code: code,
+          trace: trace,
+        };
+      }
+    }
+
+    // Step 2: Transform let/const to var for better variable tracking (fallback)
+    var transformedCode = workingCode
       .replace(/\blet\s+/g, "var ")
       .replace(/\bconst\s+/g, "var ");
 
-    // Create a modified code with variable assignments wrapped to track them
+    // Step 3: Create a modified code with variable assignments wrapped to track them
     var wrappedCode = wrapCodeForVariableTracking(transformedCode);
 
-    // Create enhanced sandbox with tracer function
+    // Step 4: Create enhanced sandbox with tracer function
     var sandbox = createEnhancedSandbox();
 
-    // Execute the wrapped code
+    // Step 5: Execute the wrapped code
     vm.runInContext(wrappedCode, sandbox, {
       filename: "user_script.js",
       timeout: 5000, // 5 second timeout
