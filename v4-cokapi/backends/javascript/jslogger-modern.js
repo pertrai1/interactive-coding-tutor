@@ -93,14 +93,11 @@ function traceExecution(code) {
     stepCount = 0;
     currentLine = 1;
 
-    // Step 1: Apply line-by-line instrumentation to original code first
-    var instrumentedOriginalCode = wrapCodeForVariableTracking(code);
-
-    // Step 2: Check if transpilation is needed and apply it to the instrumented code
-    var workingCode = instrumentedOriginalCode;
+    // Step 1: Check if transpilation is needed and apply it first
+    var workingCode = code;
     var sourceMap = null;
     if (babelConfig.needsTranspilation(code)) {
-      var babelResult = babelConfig.transpileCode(instrumentedOriginalCode);
+      var babelResult = babelConfig.transpileCode(code);
       if (babelResult.success) {
         workingCode = babelResult.code;
         sourceMap = babelResult.map;
@@ -126,8 +123,11 @@ function traceExecution(code) {
       }
     }
 
+    // Step 2: Apply line-by-line instrumentation to the (potentially transpiled) code
+    var instrumentedCode = wrapCodeForVariableTracking(workingCode);
+
     // Step 3: Transform let/const to var for better variable tracking
-    var transformedCode = workingCode
+    var transformedCode = instrumentedCode
       .replace(/\blet\s+/g, "var ")
       .replace(/\bconst\s+/g, "var ");
 
@@ -188,6 +188,7 @@ function wrapCodeForVariableTracking(code) {
   var inTemplateLiteral = false;
   var inArrayLiteral = false;
   var inObjectLiteral = false;
+  var objectLiteralDepth = 0;
   var braceDepth = 0;
   var arrayDepth = 0;
   var templateDepth = 0;
@@ -244,6 +245,28 @@ function wrapCodeForVariableTracking(code) {
       continue;
     }
 
+    // Detect object literals more carefully
+    var openBraces = (line.match(/\{/g) || []).length;
+    var closeBraces = (line.match(/\}/g) || []).length;
+    
+    // Check if this line starts an object literal (= { ... })
+    if (line.match(/=\s*\{/) && openBraces > closeBraces) {
+      inObjectLiteral = true;
+      objectLiteralDepth = openBraces - closeBraces;
+    } else if (inObjectLiteral) {
+      // Update object literal depth
+      objectLiteralDepth += openBraces - closeBraces;
+      if (objectLiteralDepth <= 0) {
+        inObjectLiteral = false;
+        objectLiteralDepth = 0;
+      }
+    }
+
+    // Skip instrumentation if we're inside an object literal
+    if (inObjectLiteral && objectLiteralDepth > 0) {
+      continue;
+    }
+
     // Detect start of true multi-line constructs (classes, functions, not object literals)
     if (line.match(/^(class|function)\s+/) || (line.includes('{') && line.match(/^\s*(class|function)/))) {
       if (!inMultiLineConstruct && line.includes('{') && !line.includes('}')) {
@@ -281,6 +304,24 @@ function wrapCodeForVariableTracking(code) {
         // Skip if line is just an object/array property
         if (line.match(/^\s*\w+:\s*.+[,}]?\s*$/) || line.match(/^\s*"[^"]*":\s*.+[,}]?\s*$/)) {
           shouldSkip = true;
+        }
+        
+        // Skip if line starts with dot (method chaining continuation)
+        if (line.match(/^\s*\./)) {
+          shouldSkip = true;
+        }
+        
+        // Skip if line ends with dot (method chaining start)
+        if (line.match(/\.\s*$/)) {
+          shouldSkip = true;
+        }
+        
+        // Skip if line contains method call followed by comment and we're expecting continuation
+        if (line.match(/\)\s*\/\/.*$/) && i + 1 < lines.length) {
+          var nextLine = lines[i + 1].trim();
+          if (nextLine.match(/^\s*\./)) {
+            shouldSkip = true;
+          }
         }
         
         if (!shouldSkip) {
