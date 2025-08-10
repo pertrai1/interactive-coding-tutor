@@ -269,8 +269,21 @@ function wrapCodeForVariableTracking(code) {
         wrappedLines.push(`(function() { __tracer.call(this, ${multiLineConstructStartLine}); }).call(this);`);
         inMultiLineConstruct = false;
       } else if (!inMultiLineConstruct) {
-        // Simple statement - but avoid object/array literals
-        if (!line.includes('{') || line.includes('}')) {
+        // Simple statement - but avoid object/array literals and specific patterns
+        var shouldSkip = false;
+        
+        // Skip if line is part of object literal (contains comma and is between braces)
+        if (line.includes(',') && (line.includes('{') || line.includes('[') || 
+            line.match(/^\s*\w+:\s*/) || line.match(/^\s*"[^"]*":\s*/) || line.match(/^\s*'[^']*':\s*/))) {
+          shouldSkip = true;
+        }
+        
+        // Skip if line is just an object/array property
+        if (line.match(/^\s*\w+:\s*.+[,}]?\s*$/) || line.match(/^\s*"[^"]*":\s*.+[,}]?\s*$/)) {
+          shouldSkip = true;
+        }
+        
+        if (!shouldSkip) {
           wrappedLines.push(`(function() { __tracer.call(this, ${originalLineNumber}); }).call(this);`);
         }
       }
