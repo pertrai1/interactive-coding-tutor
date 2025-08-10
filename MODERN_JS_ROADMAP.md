@@ -54,6 +54,7 @@
   - [ ] Map transpiled line numbers back to original source
   - [ ] Ensure execution steps show correct original line numbers
   - [ ] Handle multi-line constructs properly
+  - [ ] Ensure frames and objects appear correctly
 
 #### Advanced Syntax Support
 
@@ -203,10 +204,10 @@
 
 - [x] Phase 1 Started: **August 10, 2025**
 - [x] Phase 1 Completed: **August 10, 2025**
-- [ ] Phase 2 Started: ****\_\_\_****
-- [ ] Phase 2 Completed: ****\_\_\_****
-- [ ] Phase 3 Started: ****\_\_\_****
-- [ ] Phase 3 Completed: ****\_\_\_****
+- [ ] Phase 2 Started: \***\*\_\_\_\*\***
+- [ ] Phase 2 Completed: \***\*\_\_\_\*\***
+- [ ] Phase 3 Started: \***\*\_\_\_\*\***
+- [ ] Phase 3 Completed: \***\*\_\_\_\*\***
 
 ---
 
