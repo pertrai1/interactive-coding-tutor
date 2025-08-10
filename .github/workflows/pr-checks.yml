@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./v5-unity
+        working-directory: ./frontend
 
     steps:
       - uses: actions/checkout@v4
@@ -23,7 +23,7 @@ jobs:
         with:
           node-version: "18"
           cache: "npm"
-          cache-dependency-path: "./v5-unity/package.json"
+          cache-dependency-path: "./frontend/package.json"
 
       - name: Install dependencies
         run: npm ci
@@ -38,7 +38,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: frontend-build
-          path: ./v5-unity/build/
+          path: ./frontend/build/
           retention-days: 7
 
   # Backend Node.js checks
@@ -101,10 +101,10 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Python syntax check
-        run: python -m py_compile v5-unity/bottle_server.py
+        run: python -m py_compile frontend/bottle_server.py
 
       - name: Check Python imports
-        run: python -c "import sys; sys.path.append('v5-unity'); import bottle_server"
+        run: python -c "import sys; sys.path.append('frontend'); import bottle_server"
 
   # Docker build tests
   docker-build:
@@ -120,7 +120,7 @@ jobs:
       - name: Build frontend Docker image
         uses: docker/build-push-action@v5
         with:
-          context: ./v5-unity
+          context: ./frontend
           push: false
           tags: frontend:test
           cache-from: type=gha
@@ -149,7 +149,7 @@ jobs:
           node-version: "18"
 
       - name: Run npm audit (Frontend)
-        working-directory: ./v5-unity
+        working-directory: ./frontend
         run: |
           npm ci
           npm audit --audit-level moderate

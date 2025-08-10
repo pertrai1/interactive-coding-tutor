@@ -2,7 +2,7 @@ services:
   # Frontend server (Python/Bottle)
   frontend:
     build:
-      context: ./v5-unity
+      context: ./frontend
       dockerfile: Dockerfile
     ports:
       - "8003:8003"

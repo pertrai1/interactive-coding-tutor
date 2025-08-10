@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./v5-unity
+        working-directory: ./frontend
 
     steps:
       - uses: actions/checkout@v4
@@ -23,7 +23,7 @@ jobs:
         with:
           node-version: "18"
           cache: "npm"
-          cache-dependency-path: "./v5-unity/package.json"
+          cache-dependency-path: "./frontend/package.json"
 
       - name: Install dependencies
         run: npm ci
@@ -186,7 +186,7 @@ jobs:
       - name: Start application for testing
         run: |
           # Build and start the application
-          cd v5-unity && npm ci && npm run build
+          cd frontend && npm ci && npm run build
           cd ../v4-cokapi && npm ci
 
           # Start docker-compose in background

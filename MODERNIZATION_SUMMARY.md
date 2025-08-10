@@ -1,41 +1,48 @@
 # Codebase Modernization Summary
 
 ## Overview
+
 Successfully modernized the Interactive Coding Tutor to focus exclusively on JavaScript and TypeScript visualization, removing legacy multi-language support and streamlining the development experience.
 
 ## 🗂️ Directories Removed
 
 ### Completely Removed:
+
 - `v1-v2/` - Legacy version 1 and 2 code
 - `tests/frontend-regression-tests/` - Deprecated PhantomJS tests
-- `v3/tests/` - Python-focused backend tests  
-- `v5-unity/tests/frontend-tests/{py2,py3,java,c,cpp,ruby}/` - Non-JavaScript test suites
+- `v3/tests/` - Python-focused backend tests
+- `frontend/tests/frontend-tests/{py2,py3,java,c,cpp,ruby}/` - Non-JavaScript test suites
 
 ### Files Cleaned Up:
+
 - `v3/*example-code/` - Removed non-JavaScript example code directories
 - `v3/web_exec_{c,cpp,java,ruby,ts}.py` - Removed non-JavaScript backend execution files
 
 ## ⚙️ Configuration Updates
 
-### Frontend (`v5-unity/js/opt-frontend-common.ts`):
+### Frontend (`frontend/js/opt-frontend-common.ts`):
+
 - Updated `langSettingToBackendScript` to focus on JS/TS endpoints
 - Simplified backend configuration to use cokapi endpoints directly
 - Removed Python backend script references
 
 ### Backend (`v4-cokapi/cokapi.js`):
+
 - Removed Java execution handlers (`exec_java`, `exec_java_jsonp`)
-- Removed Ruby execution handlers (`exec_ruby`, `exec_ruby_jsonp`) 
+- Removed Ruby execution handlers (`exec_ruby`, `exec_ruby_jsonp`)
 - Removed C/C++ execution handlers (`exec_c`, `exec_cpp`, `exec_c_jsonp`, `exec_cpp_jsonp`)
 - Removed Python Anaconda handlers (`exec_pyanaconda`, `exec_pyanaconda_jsonp`)
 - Kept only JavaScript and TypeScript execution endpoints
 - Maintained native execution mode for local development
 
-### Package Configuration (`v5-unity/package.json`):
+### Package Configuration (`frontend/package.json`):
+
 - Updated name from "v5-unity" to "interactive-coding-tutor-frontend"
 - Bumped version to 2.0.0 to reflect major modernization
 - Updated description to reflect JS/TS focus
 
 ### Documentation (`README.md`):
+
 - Complete rewrite focusing on JavaScript/TypeScript visualization
 - Removed references to multi-language support
 - Streamlined setup instructions
@@ -45,17 +52,19 @@ Successfully modernized the Interactive Coding Tutor to focus exclusively on Jav
 ## 🎯 Current Codebase Focus
 
 ### Kept and Enhanced:
+
 - ✅ JavaScript ES6+ execution and visualization
-- ✅ TypeScript execution and visualization  
+- ✅ TypeScript execution and visualization
 - ✅ Modern Webpack + TypeScript build system
 - ✅ Native Node.js execution mode (no Docker required)
 - ✅ Comprehensive local development setup
 - ✅ JavaScript-specific test suites (`v4-cokapi/backends/javascript/tests/`)
-- ✅ Frontend JavaScript visualization tests (`v5-unity/tests/frontend-tests/js/`)
+- ✅ Frontend JavaScript visualization tests (`frontend/tests/frontend-tests/js/`)
 
 ### Removed:
+
 - ❌ Python execution backends and tests
-- ❌ Java execution backends and tests  
+- ❌ Java execution backends and tests
 - ❌ C/C++ execution backends and tests
 - ❌ Ruby execution backends and tests
 - ❌ Deprecated testing infrastructure
@@ -78,7 +87,7 @@ interactive-coding-tutor/
 ├── v3/                          # Legacy code (minimal, JS-related only)
 ├── v4-cokapi/                   # JavaScript/TypeScript execution backend
 │   └── backends/javascript/     # JS execution engine and tests
-├── v5-unity/                    # Modern frontend
+├── frontend/                    # Modern frontend
 │   ├── js/                      # TypeScript source code
 │   ├── tests/frontend-tests/js/ # JavaScript visualization tests
 │   └── build/                   # Compiled bundles
@@ -89,8 +98,9 @@ interactive-coding-tutor/
 ## 🎉 Result
 
 The codebase is now:
+
 - **Focused**: Single-purpose JavaScript/TypeScript visualization tool
-- **Modern**: Uses contemporary development practices and tooling  
+- **Modern**: Uses contemporary development practices and tooling
 - **Maintainable**: Significantly reduced complexity and legacy burden
 - **Documented**: Clear setup and development instructions
 - **Streamlined**: Fast local development workflow

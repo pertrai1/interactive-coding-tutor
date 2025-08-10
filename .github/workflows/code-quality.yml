@@ -50,7 +50,7 @@ jobs:
       - name: Run ESLint on TypeScript files
         run: |
           # Run ESLint on frontend TypeScript files
-          eslint "v5-unity/**/*.{js,ts}" --max-warnings 50 || true
+          eslint "frontend/**/*.{js,ts}" --max-warnings 50 || true
 
           # Run ESLint on backend JavaScript files
           eslint "v4-cokapi/**/*.js" --env node --max-warnings 20 || true
@@ -152,7 +152,7 @@ jobs:
           echo '{"semi": true, "singleQuote": true, "tabWidth": 2}' > .prettierrc
 
           # Check TypeScript/JavaScript formatting
-          prettier --check "v5-unity/**/*.{js,ts,json}" "v4-cokapi/**/*.{js,json}" || {
+          prettier --check "frontend/**/*.{js,ts,json}" "v4-cokapi/**/*.{js,json}" || {
             echo "::warning::Code formatting issues found. Run 'prettier --write' to fix."
             exit 0
           }
@@ -173,7 +173,7 @@ jobs:
       - name: Check for outdated dependencies
         run: |
           echo "=== Frontend Dependencies ==="
-          cd v5-unity && npm outdated || true
+          cd frontend && npm outdated || true
 
           echo "=== Backend Dependencies ==="
           cd ../v4-cokapi && npm outdated || true
@@ -184,7 +184,7 @@ jobs:
           npm install -g depcheck
 
           echo "=== Frontend Unused Dependencies ==="
-          cd v5-unity && depcheck || true
+          cd frontend && depcheck || true
 
           echo "=== Backend Unused Dependencies ==="
           cd ../v4-cokapi && depcheck || true

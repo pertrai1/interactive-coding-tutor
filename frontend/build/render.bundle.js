@@ -45,6 +45,9 @@ function initializeVisualization(code, trace, consoleOutput) {
     console.log(`    Globals:`, step.globals);
     console.log(`    Stack frames:`, step.stack_to_render);
     console.log(`    Heap objects:`, step.heap);
+    if (step.stdout) {
+      console.log(`    Console output:`, step.stdout);
+    }
   });
   createVisualizationUI();
   updateVisualization();
@@ -585,15 +588,9 @@ function updateStackFrames() {
 }
 function updateGlobalVariables(table, traceStep) {
   const globals = traceStep?.globals || {};
-  console.log("updateGlobalVariables called with:", {
-    traceStep,
-    globals,
-    globalKeys: Object.keys(globals)
-  });
   let html = "";
   for (const [name, value] of Object.entries(globals)) {
     if (!isBuiltInObject(name)) {
-      console.log(`Adding global variable: ${name} = ${value}`);
       html += `
         <tr>
           <td class="stackFrameVar">${escapeHtml(name)}</td>
@@ -602,7 +599,6 @@ function updateGlobalVariables(table, traceStep) {
       `;
     }
   }
-  console.log("Generated HTML for globals:", html);
   table.innerHTML = html;
 }
 function createStackFrame(frame, index) {

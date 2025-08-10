@@ -23,7 +23,7 @@ This repository has been **modernized and streamlined** to focus exclusively on 
 - **Simplified**: Backend configuration to only support JS/TS
 - **Updated**: Modern development workflow and documentation
 
-The latest development version is in [v5-unity](v5-unity/) with backend services in [v4-cokapi](v4-cokapi/).
+The latest development version is in [frontend](frontend/) with backend services in [v4-cokapi](v4-cokapi/).
 
 ## 📚 Documentation
 
@@ -132,7 +132,7 @@ The setup uses Docker Compose to orchestrate two services:
 # docker-compose.yml
 services:
   frontend:
-    build: ./v5-unity
+    build: ./frontend
     ports: ["8003:8003"]
 
   backend:
@@ -183,7 +183,7 @@ For modern JavaScript/TypeScript development, follow these streamlined steps:
    git clone https://github.com/pertrai1/interactive-coding-tutor.git
    cd interactive-coding-tutor
    pip install -r requirements.txt
-   cd v5-unity && npm install
+   cd frontend && npm install
    cd ../v4-cokapi && make deps
    ```
 
@@ -200,10 +200,10 @@ For modern JavaScript/TypeScript development, follow these streamlined steps:
    cd v4-cokapi && node cokapi.js local
 
    # Terminal 2: Frontend server
-   cd v5-unity && python3 bottle_server.py
+   cd frontend && python3 bottle_server.py
 
    # Terminal 3: Build system
-   cd v5-unity && npm run webpack
+   cd frontend && npm run webpack
    ```
 
 4. **Test the application:**
@@ -248,14 +248,14 @@ The backend is a Python server using the Bottle web framework.
 3. **Start the backend server:**
 
    ```bash
-   cd v5-unity
+   cd frontend
    python bottle_server.py
    ```
 
    Alternative using npm script:
 
    ```bash
-   cd v5-unity
+   cd frontend
    npm start
    ```
 
@@ -268,7 +268,7 @@ The frontend uses TypeScript, Webpack, and various JavaScript libraries.
 1. **Navigate to the frontend directory:**
 
    ```bash
-   cd v5-unity
+   cd frontend
    ```
 
 2. **Install global dependencies:**
@@ -317,14 +317,14 @@ With both backend and frontend set up:
 1. **Start the backend server** (in one terminal):
 
    ```bash
-   cd v5-unity
+   cd frontend
    python bottle_server.py
    ```
 
 2. **Start the frontend build process** (in another terminal):
 
    ```bash
-   cd v5-unity
+   cd frontend
    npm run webpack
    ```
 
@@ -417,7 +417,7 @@ For JavaScript and TypeScript code execution, you need to run an additional back
 To create a production build with minified assets:
 
 ```bash
-cd v5-unity
+cd frontend
 npm run production-build
 ```
 
@@ -429,7 +429,7 @@ This will:
 
 ### Development Workflow
 
-1. **Make changes** to TypeScript files in `v5-unity/js/`
+1. **Make changes** to TypeScript files in `frontend/js/`
 2. **Webpack will automatically recompile** your changes (if running `npm run webpack`)
 3. **Refresh your browser** to see the changes
 4. **Python server will auto-reload** when you make changes to Python files (if running with `reloader=True`)
@@ -489,7 +489,7 @@ lsof -i :3000
 
 ### Project Structure
 
-- `v5-unity/` - Main development directory
+- `frontend/` - Main development directory
   - `js/` - TypeScript source files
   - `css/` - Stylesheets
   - `build/` - Compiled JavaScript bundles (generated)

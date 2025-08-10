@@ -20,8 +20,8 @@ appropriate academic integrity standards.</p>
 Copyright &copy; <a href="http://www.pgbovine.net/">Philip Guo</a>.  All rights reserved.
 </p>`;
 
-
-export var footerHtml = `
+export var footerHtml =
+  `
 <p>
   <button id="genUrlBtn" class="smallBtn" type="button">Generate permanent link</button> <input type="text" id="urlOutput" size="70"/>
 </p>
@@ -60,15 +60,15 @@ href="https://docs.anaconda.com/anaconda/">Anaconda</a>, which lets
 you import many more modules.)
 
 <a
-href="https://github.com/pgbovine/OnlinePythonTutor/tree/master/v5-unity">Backend source code</a>.
+href="https://github.com/pgbovine/OnlinePythonTutor/tree/master/frontend">Backend source code</a>.
 </p>
 
 <p>2. Java using Oracle's Java 8. The original <a
 href="http://cscircles.cemc.uwaterloo.ca/java_visualize/">Java
 visualizer</a> was created by <a href="https://github.com/daveagp">David Pritchard</a> and Will Gwozdz.
 It supports
-<code><a href="http://introcs.cs.princeton.edu/java/stdlib/javadoc/StdIn.html">StdIn</a></code>, 
-<code><a href="http://introcs.cs.princeton.edu/java/stdlib/javadoc/StdOut.html">StdOut</a></code>, 
+<code><a href="http://introcs.cs.princeton.edu/java/stdlib/javadoc/StdIn.html">StdIn</a></code>,
+<code><a href="http://introcs.cs.princeton.edu/java/stdlib/javadoc/StdOut.html">StdOut</a></code>,
 most other <a href="http://introcs.cs.princeton.edu/java/stdlib"><tt>stdlib</tt> libraries</a>,
 <a href="http://introcs.cs.princeton.edu/java/43stack/Stack.java.html"><tt>Stack</tt></a>,
 <a href="http://introcs.cs.princeton.edu/java/43stack/Queue.java.html"><tt>Queue</tt></a>,

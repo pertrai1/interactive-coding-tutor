@@ -194,11 +194,11 @@ v4-cokapi/
   http://pythontutor.com/live.html
 
 
-v5-unity/
+frontend/
 
-  2016-07-27 - deployed v5-unity/ onto pythontutor.com to replace v3/,
+  2016-07-27 - deployed frontend/ onto pythontutor.com to replace v3/,
   which was deployed in September 2012. From now on, active development
-  will take place in v5-unity/ and *not* v3/.
+  will take place in frontend/ and *not* v3/.
 
   2017-10-20 - launched "Get live help!" feature on Python Tutor, where
   anyone on the site can volunteer to help others who are requesting
@@ -229,7 +229,7 @@ v5-unity/
   - started keeping a list of unsupported features and linking to it
     when the user encounters errors, so they will know its limitations:
     https://github.com/pgbovine/OnlinePythonTutor/blob/master/unsupported-features.md
-    
+
   2019-04-01 (around this time) - Put up more warnings throughout the site that
   there won't be technical support or new features coming, since I don't have the
   time to maintain its code or server load as well anymore. Disabled "Get live help!"

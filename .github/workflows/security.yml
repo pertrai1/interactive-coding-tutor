@@ -43,7 +43,7 @@ jobs:
       - name: Install dependencies and run audit
         run: |
           echo "=== Frontend Security Audit ==="
-          cd v5-unity
+          cd frontend
           npm ci
           npm audit --audit-level moderate || {
             echo "::warning::Frontend dependencies have security vulnerabilities"
@@ -77,7 +77,7 @@ jobs:
           }
 
           # Basic Python security analysis
-          bandit -r v5-unity/ -f json -o bandit-report.json || {
+          bandit -r frontend/ -f json -o bandit-report.json || {
             echo "::warning::Potential security issues found in Python code"
           }
         continue-on-error: true
@@ -104,7 +104,7 @@ jobs:
 
       - name: Build images for scanning
         run: |
-          docker build -t frontend-security:latest ./v5-unity
+          docker build -t frontend-security:latest ./frontend
           docker build -t backend-security:latest ./v4-cokapi
 
       - name: Run Trivy vulnerability scanner - Frontend
@@ -146,7 +146,7 @@ jobs:
         run: npm install -g license-checker
 
       - name: Check frontend licenses
-        working-directory: ./v5-unity
+        working-directory: ./frontend
         run: |
           npm ci
           echo "=== Frontend License Report ==="

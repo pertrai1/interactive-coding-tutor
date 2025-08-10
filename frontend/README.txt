@@ -91,7 +91,7 @@ otherwise stuff doesn't play well together, eeeek dependency hell!
 ======
 History:
 
-I started porting v3/ over to v5-unity/ on 2016-06-12 since the headache
+I started porting v3/ over to frontend/ on 2016-06-12 since the headache
 of manually maintaining so many JS/CSS files and their intricate
 dependencies was starting to get out of hand ... i've waited for years
 to port to a more sustainable and modern development setup ...

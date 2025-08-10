@@ -3,14 +3,14 @@
 
 # Frontend changes
 frontend:
-  - v5-unity/**/*
-  - "v5-unity/**/*.ts"
-  - "v5-unity/**/*.js"
-  - "v5-unity/**/*.html"
-  - "v5-unity/**/*.css"
-  - "v5-unity/package.json"
-  - "v5-unity/vite.config.ts"
-  - "v5-unity/tsconfig.json"
+  - frontend/**/*
+  - "frontend/**/*.ts"
+  - "frontend/**/*.js"
+  - "frontend/**/*.html"
+  - "frontend/**/*.css"
+  - "frontend/package.json"
+  - "frontend/vite.config.ts"
+  - "frontend/tsconfig.json"
 
 # Backend changes
 backend:
