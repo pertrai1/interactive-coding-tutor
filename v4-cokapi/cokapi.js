@@ -43,7 +43,7 @@ var util = require("util");
 // to use low-numbered ports, Node must be allowed to bind to ports lower than 1024.
 // e.g., run: sudo setcap 'cap_net_bind_service=+ep' <node executable>
 // defaults:
-var PORT = 80;
+var PORT = process.env.PORT || 80;
 var useHttps = false;
 var local = false;
 
@@ -185,7 +185,7 @@ function exec_js_handler(
   var args = [];
 
   // must match the docker setup in backends/javascript/Dockerfile
-  exeFile = "/usr/bin/docker"; // absolute path to docker executable
+  exeFile = "/usr/local/bin/docker"; // absolute path to docker executable (macOS path)
   args.push(
     "run",
     "-m",
@@ -195,10 +195,9 @@ function exec_js_handler(
     "--net=none",
     "--cap-drop",
     "all",
-    "pgbovine/cokapi-js:v1",
-    "/tmp/javascript/node-v6.0.0-linux-x64/bin/node", // custom Node.js version
-    "--expose-debug-as=Debug",
-    "/tmp/javascript/jslogger.js"
+    "pgbovine/cokapi-js:v2",
+    "node", // Use modern Node.js from container
+    "/tmp/javascript/jslogger-modern.js"
   );
 
   if (isTypescript) {
@@ -223,21 +222,22 @@ function exec_js_handler(
   );
 }
 
-// for running *natively* on localhost my Mac (must customize for Linux):
+// for running *natively* on localhost with modern Node.js:
 if (local) {
   app.get("/exec_js_native", function (req, res) {
     res.setHeader("Access-Control-Allow-Origin", "*"); // enable CORS
 
     var usrCod = req.query.user_script;
 
-    var exeFile = "backends/javascript/node-v6.0.0-darwin-x64/bin/node";
+    // Use system Node.js for modern ECMAScript support (ES2025+)
+    var path = require("path");
+    var exeFile = "node"; // Use system Node.js instead of bundled v6.0.0
     var args = [];
-    args.push(
-      "--expose-debug-as=Debug",
-      "backends/javascript/jslogger.js",
-      "--jsondump=true",
-      "--code=" + usrCod
+    var jsloggerPath = path.join(
+      __dirname,
+      "backends/javascript/jslogger-modern.js"
     );
+    args.push(jsloggerPath, "--jsondump=true", "--code=" + usrCod);
 
     child_process.execFile(
       exeFile,
@@ -250,9 +250,7 @@ if (local) {
       postExecHandler.bind(null, res, false)
     );
   });
-}
-
-// test endpoint for debugging
+} // test endpoint for debugging
 app.get("/test_failure_jsonp", function (req, res) {
   var errTrace = {
     code: "",

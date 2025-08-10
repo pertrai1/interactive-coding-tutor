@@ -38,4 +38,5 @@ if __name__ == "__main__":
     if os.environ.get('APP_LOCATION')=='heroku':
         run(host='0.0.0.0', port=int(os.environ.get("PORT",5000)), reloader=True)
     else:
-        run(host='localhost', port=8003, reloader=True)
+        # Bind to 0.0.0.0 for Docker container accessibility
+        run(host='0.0.0.0', port=8003, reloader=True)

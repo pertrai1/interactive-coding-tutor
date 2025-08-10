@@ -1,57 +1,29 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-    <!--
+  <!--
   Python Tutor: https://github.com/pgbovine/OnlinePythonTutor/
   Copyright (C) Philip Guo (philip@pgbovine.net)
   LICENSE: https://github.com/pgbovine/OnlinePythonTutor/blob/master/LICENSE.txt
 -->
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>
-            JavaScript Code Visualizer - Visualize JavaScript and TypeScript
-            execution
-        </title>
-        <meta
-            name="description"
-            content="JavaScript Code Visualizer - Visualize JavaScript and TypeScript execution"
-        />
-        <script src="build/visualize.bundle.js?ef8faad903"></script>
-    </head>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>
+      JavaScript Code Visualizer - Visualize JavaScript and TypeScript execution
+    </title>
+    <meta
+      name="description"
+      content="JavaScript Code Visualizer - Visualize JavaScript and TypeScript execution"
+    />
+    <script type="module" src="build/visualize.bundle.js"></script>
+  </head>
 
-    <body>
-        <div class="s4"></div>
+  <body>
+    <div id="pyInputPane">
+      <!-- Modern UI will be injected here by the TypeScript module -->
+    </div>
 
-        <div class="title-container">
-            <h3 class="eyebrow">Visualize your Algorithms</h3>
-            <h1 class="dashboard-title">JavaScript Code Visualizer</h1>
-        </div>
-
-        <div id="pyInputPane">
-            <div id="codeInputWarnings">
-                Write code in
-
-                <select id="pythonVersionSelector">
-                    <option value="js" selected>JavaScript ES6</option>
-                    <option value="ts">TypeScript 1.4</option>
-                </select>
-            </div>
-
-            <div id="codeInputPane"></div>
-            <div id="frontendErrorOutput"></div>
-
-            <p>
-                <button id="executeBtn" class="bigBtn" type="button">
-                    Visualize Execution
-                </button>
-                <!-- <button style="margin-left: 20px;" id="liveModeBtn" class="bigBtn" type="button">Live Programming Mode</button> -->
-            </p>
-        </div>
-
-        <!-- <div id="output-container"> -->
-        <div id="pyOutputPane"></div>
-        <!-- </div> -->
-
-        <div id="chat_div"></div>
-    </body>
+    <div id="pyOutputPane"></div>
+    <div id="chat_div"></div>
+  </body>
 </html>

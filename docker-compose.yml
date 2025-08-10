@@ -1,0 +1,32 @@
+services:
+  # Frontend server (Python/Bottle)
+  frontend:
+    build:
+      context: ./v5-unity
+      dockerfile: Dockerfile
+    ports:
+      - "8003:8003"
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - backend
+    networks:
+      - tutor-network
+
+  # JavaScript/TypeScript backend server (Node.js)
+  backend:
+    build:
+      context: ./v4-cokapi
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock # For Docker-in-Docker execution
+    environment:
+      - NODE_ENV=development
+    networks:
+      - tutor-network
+
+networks:
+  tutor-network:
+    driver: bridge

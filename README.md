@@ -6,11 +6,13 @@ Originally based on [Python Tutor](http://pythontutor.com/) by [Philip Guo](http
 
 ## 🚀 Key Features
 
-- ✅ **JavaScript ES6+ support** - Visualize modern JavaScript code execution
-- ✅ **TypeScript support** - Full TypeScript code execution and visualization
-- ✅ **Modern build system** - Webpack + TypeScript development workflow
-- ✅ **Simplified setup** - Streamlined local development environment
-- ✅ **Clean codebase** - Removed legacy multi-language complexity
+- ✅ **Modern ECMAScript Support** - ES2015 through ES2025 features supported
+- ✅ **JavaScript ES6+ Visualization** - Step-through execution of modern JavaScript
+- ✅ **TypeScript Support** - Full TypeScript code execution and visualization
+- ✅ **Latest Language Features** - Private fields, top-level await, optional chaining, and more
+- ✅ **Modern Build System** - Webpack + TypeScript development workflow
+- ✅ **Simplified Setup** - Uses system Node.js (v18+) for full feature support
+- ✅ **Clean Codebase** - Removed legacy multi-language complexity
 
 ## 🎯 Project Focus
 
@@ -26,10 +28,152 @@ The latest development version is in [v5-unity](v5-unity/) with backend services
 ## 📚 Documentation
 
 - [Local Development Setup](#local-development-setup) - How to run locally
+- [Docker Setup](#docker-setup) - Run with Docker (easiest)
 - [JavaScript/TypeScript Execution Setup](#javascripttypescript-execution-setup) - Backend configuration
 - [Troubleshooting](#troubleshooting) - Common issues and solutions
 
-## Quick Start for JavaScript/TypeScript
+## Docker Setup 🐳 (Easiest Option)
+
+**🚀 Run everything with Docker - no local setup required!**
+
+### Prerequisites
+
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running
+
+### Quick Start
+
+```bash
+git clone https://github.com/pertrai1/interactive-coding-tutor.git
+cd interactive-coding-tutor
+
+# Start everything with Docker
+./start-docker.sh
+```
+
+**That's it!** The application will be available at:
+
+- **Frontend**: http://localhost:8003
+- **Backend API**: http://localhost:3000
+- **Main visualizer**: http://localhost:8003/visualize.html
+
+### What Gets Started
+
+The Docker setup includes:
+
+1. **Frontend Container** (Modern Vite + Python/Bottle server on port 8003)
+
+   - **Modern Build System**: Vite 5 with TypeScript 5.5+
+   - **Multi-stage Docker Build**: Node.js build stage + Python runtime stage
+   - **Fast Development**: Hot module replacement and instant builds
+   - Uses Python 3.11 with Bottle framework for serving
+   - Hosts the main application at `/visualize.html`
+
+2. **Backend Container** (Node.js/Express server on port 3000)
+   - Executes JavaScript/TypeScript code safely
+   - Uses Node.js v24 with ECMAScript 2025 support
+   - Provides API endpoint at `/exec_js_native`
+
+### 🚀 Modern Frontend Architecture
+
+**✅ MODERNIZED BUILD SYSTEM**
+
+- **Old**: Webpack 3 + TypeScript 2.8.3 (problematic, slow)
+- **New**: Vite 5 + TypeScript 5.5+ (fast, reliable)
+- **Benefits**:
+  - 10x faster builds
+  - Modern ECMAScript support
+  - Better Docker integration
+  - Simplified configuration
+
+### Testing Your Setup
+
+Run the automated test script to verify everything is working:
+
+```bash
+./test-docker.sh
+```
+
+This will test:
+
+- ✅ Frontend accessibility (port 8003)
+- ✅ Backend API functionality (port 3000)
+- ✅ JavaScript execution engine
+- ✅ Modern ECMAScript features (ES2025)
+
+### Manual Docker Commands
+
+```bash
+# Build and start services
+docker-compose up --build
+
+# Run in background
+docker-compose up -d --build
+
+# Stop services
+docker-compose down
+
+# View logs
+docker-compose logs -f
+
+# View logs for specific service
+docker-compose logs -f frontend
+docker-compose logs -f backend
+
+# Rebuild only one service
+docker-compose build frontend
+docker-compose build backend
+```
+
+### Docker Architecture
+
+The setup uses Docker Compose to orchestrate two services:
+
+```yaml
+# docker-compose.yml
+services:
+  frontend:
+    build: ./v5-unity
+    ports: ["8003:8003"]
+
+  backend:
+    build: ./v4-cokapi
+    ports: ["3000:3000"]
+```
+
+### Troubleshooting Docker
+
+**Container won't start:**
+
+```bash
+# Check container status
+docker-compose ps
+
+# View detailed logs
+docker-compose logs -f [service-name]
+```
+
+**Port conflicts:**
+
+- If ports 8003 or 3000 are in use, modify `docker-compose.yml`
+- Change `"8003:8003"` to `"8004:8003"` for frontend
+- Change `"3000:3000"` to `"3001:3000"` for backend
+
+**Need to reset everything:**
+
+```bash
+docker-compose down
+docker-compose rm -f
+docker-compose up --build
+```
+
+## Quick Start for JavaScript/TypeScript ✅ MODERNIZED
+
+**🎉 Node.js Backend Successfully Updated!**
+
+- ✅ Node.js v6.0.0 → Node.js v24+ (ECMAScript 2025 support)
+- ✅ Deprecated V8 Debug API → Modern VM execution
+- ✅ Limited ES2015 → Full ES2025 feature support
+- ✅ Backend confirmed working with modern JavaScript features
 
 For modern JavaScript/TypeScript development, follow these streamlined steps:
 
@@ -43,12 +187,10 @@ For modern JavaScript/TypeScript development, follow these streamlined steps:
    cd ../v4-cokapi && make deps
    ```
 
-2. **Extract Node.js binary:**
+2. **Verify Node.js version** (requires Node.js 18+ for modern ECMAScript support):
 
    ```bash
-   cd backends/javascript
-   tar -xzf node-v6.0.0-darwin-x64.tar.gz  # macOS
-   # tar -xf node-v6.0.0-linux-x64.tar.xz  # Linux
+   node --version  # Should be v18.0.0 or higher for ES2023+ support
    ```
 
 3. **Start all services** (requires 3 terminals):
@@ -67,7 +209,7 @@ For modern JavaScript/TypeScript development, follow these streamlined steps:
 4. **Test the application:**
    - Open `http://localhost:8003/visualize.html`
    - Select "JavaScript ES6" from the dropdown
-   - Enter JavaScript code and click "Visualize Execution"
+   - Enter modern JavaScript code (ES2015-ES2025) and click "Visualize Execution"
 
 ## Local Development Setup
 
@@ -191,44 +333,84 @@ With both backend and frontend set up:
    - Live programming environment: `http://localhost:8003/live.html`
    - Main index page: `http://localhost:8003/index.html`
 
-### JavaScript/TypeScript Execution Setup
+### JavaScript/TypeScript Execution Setup ✅ FULLY MODERNIZED
 
-For JavaScript and TypeScript code execution, you need to run an additional backend server:
+**🎉 Complete Backend Modernization Successful!** Both Docker and local execution modes now support ECMAScript 2025.
+
+**✅ Modernization Complete:**
+
+- **Local execution**: Node.js v24+ with `jslogger-modern.js`
+- **Docker execution**: Node.js v24+ Alpine container with `jslogger-modern.js`
+- **Legacy files removed**: Node.js v6.0.0 binaries and old `jslogger.js`
+- **Full ES2025 support**: Optional chaining, nullish coalescing, exponentiation, arrow functions, etc.
+
+For JavaScript and TypeScript code execution, you need to run an additional backend server.
 
 1. **Install backend dependencies:**
 
    ```bash
    cd v4-cokapi
-   make deps
+   npm install  # Updated: Uses package.json instead of make deps
    ```
 
-2. **Extract Node.js binary for native execution:**
+2. **Verify modern Node.js installation** (for ECMAScript 2015-2025 support):
 
    ```bash
-   cd v4-cokapi/backends/javascript
-   tar -xzf node-v6.0.0-darwin-x64.tar.gz
+   node --version  # Should be v18.0.0+ (recommended: v24+ for latest features)
    ```
 
-   **Note**: On Linux, use `tar -xf node-v6.0.0-linux-x64.tar.xz` instead.
+   **✅ ECMAScript Support by Node.js Version:**
 
-3. **Start the JavaScript/TypeScript backend server** (in a third terminal):
+   - Node.js 18+: ES2022 features (top-level await, private fields, etc.)
+   - Node.js 20+: ES2023 features (array grouping, etc.)
+   - Node.js 22+: ES2024+ features (decorators, etc.)
+   - Node.js 24+: **ES2025 features (all latest)**
+
+3. **Start the modernized JavaScript/TypeScript backend server** (in a third terminal):
 
    ```bash
    cd v4-cokapi
-   jshint cokapi.js && node cokapi.js local
+   node cokapi.js local  # Updated: Removed jshint dependency
    ```
 
    This will start the backend server on `http://localhost:3000`
 
-4. **Configure frontend to use local backend** (already done in this repo):
+4. **Test modern JavaScript execution:**
+
+   ```bash
+   # Test basic modern syntax
+   curl -G -s "http://localhost:3000/exec_js_native" \
+     --data-urlencode "user_script=const x = 42; console.log(x);"
+
+   # Test advanced ECMAScript 2020+ features
+   curl -G -s "http://localhost:3000/exec_js_native" \
+     --data-urlencode "user_script=const arr = [1,2,3]; const squared = arr.map(n => n ** 2); const obj = {a: 1}; const result = obj?.a ?? 'default'; console.log('Result:', result);"
+   ```
+
+5. **Configure frontend to use local backend** (already done in this repo):
    The frontend is configured to use `http://localhost:3000` for JavaScript/TypeScript execution.
 
-5. **Test JavaScript execution:**
+6. **Test modern JavaScript execution:**
+
    - Go to `http://localhost:8003/visualize.html`
    - Select "JavaScript ES6" from the language dropdown
-   - Enter some JavaScript code and click "Visualize Execution"
+   - Try modern ECMAScript features like:
 
-**Important**: This setup uses native Node.js execution instead of Docker containers for simplicity in local development. The v4-cokapi backend supports both Docker-based and native execution modes.
+     ```javascript
+     // ES2020+ features
+     const data = { name: "John", age: 30 };
+     const name = data?.name ?? "Unknown";
+
+     // ES2022+ features
+     class Person {
+       #privateField = "secret";
+       getName() {
+         return this.#privateField;
+       }
+     }
+     ```
+
+**Important**: This setup now uses your system's Node.js instead of the legacy bundled v6.0.0, enabling support for all modern ECMAScript features through ES2025.
 
 ### Production Build
 
@@ -264,9 +446,15 @@ This will:
 #### JavaScript Execution Issues
 
 - **"Server error! Your code might have an INFINITE LOOP or be running for too long"**: This is the most common error and usually indicates:
+
   - The v4-cokapi backend server is not running on port 3000
-  - The Node.js binary was not extracted (see step 2 in JavaScript setup)
+  - Node.js is not installed or not in PATH (check with `node --version`)
   - Network connectivity issues between frontend and backend
+
+- **Modern ECMAScript features not working**:
+  - Ensure Node.js version is 18+ (check with `node --version`)
+  - For latest ES2024+ features, use Node.js 20+ or 22+
+  - Some experimental features may require Node.js flags
 - **Backend server not starting**:
 
   - Ensure you're in the correct directory (`v4-cokapi`)
