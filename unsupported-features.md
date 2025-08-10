@@ -40,11 +40,11 @@ For more details on project status and issue prioritization, check out these vid
 ### JavaScript
 
 - **Modern ES6+ syntax features (✅ Now Supported via Babel):**
-  - `const` and `let` declarations ✅
-  - Arrow functions (`=>`) ✅ 
-  - Template literals (backticks) ✅
-  - Destructuring assignment (`const { x } = obj`) ✅
-  - Default parameters ✅
+  - `const` and `let` declarations ✅ **FULLY SUPPORTED**
+  - Arrow functions (`=>`) ✅ **FULLY SUPPORTED** 
+  - Template literals (backticks with `${expression}`) ✅ **FULLY SUPPORTED**
+  - Destructuring assignment (`const { x, y } = obj`) ✅ **FULLY SUPPORTED**
+  - Default parameters (`function greet(name = 'World')`) ✅ **FULLY SUPPORTED**
   - Rest/spread operators (`...`) - use traditional array/object methods
 - **Advanced language features:**
   - Classes (`class` keyword) - use function constructors and prototypes
@@ -74,6 +74,30 @@ For more details on project status and issue prioritization, check out these vid
   - Debugger statements
 
 **Recommended approach:** Modern ES6+ JavaScript is now supported! Use arrow functions, const/let declarations, template literals, destructuring, and default parameters for enhanced code visualization. For best compatibility, avoid advanced features like classes, async/await, and modules.
+
+**Examples of supported modern syntax:**
+```javascript
+// const/let declarations
+const x = 5;
+let y = 10;
+
+// Arrow functions
+const add = (a, b) => a + b;
+const square = x => x * x;
+
+// Template literals with interpolation
+const name = 'Alice';
+const greeting = `Hello ${name}, result: ${add(2, 3)}`;
+
+// Destructuring assignment
+const obj = {a: 1, b: 2};
+const {a, b} = obj;
+
+// Default parameters
+function greet(name = 'World', age = 0) {
+  return `Hi ${name}, age ${age}`;
+}
+```
 
 ### Python
 
