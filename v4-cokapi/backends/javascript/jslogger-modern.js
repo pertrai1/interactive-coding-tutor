@@ -131,10 +131,17 @@ function traceExecution(code) {
       .replace(/\blet\s+/g, "var ")
       .replace(/\bconst\s+/g, "var ");
 
-    // Step 4: Create enhanced sandbox with tracer function
+    // Step 5: Create enhanced sandbox with tracer function
     var sandbox = createEnhancedSandbox();
 
-    // Step 5: Execute the transformed code (already instrumented)
+    // Debug: Show the instrumented code (remove this in production)
+    if (argv.debug) {
+      log("=== INSTRUMENTED CODE ===");
+      log(transformedCode);
+      log("=== END INSTRUMENTED CODE ===");
+    }
+
+    // Step 6: Execute the transformed code (already instrumented)
     vm.runInContext(transformedCode, sandbox, {
       filename: "user_script.js",
       timeout: 5000, // 5 second timeout
@@ -173,12 +180,17 @@ function wrapCodeForVariableTracking(code) {
   var lines = code.split("\n");
   var wrappedLines = [];
 
-  // __tracer is already available as a global in the sandbox context
-  // No need to set it up - it's injected by the VM context
+  // Store the original code globally for source mapping
+  global.__originalCode = code;
 
-  // Smart instrumentation: only add tracers at valid statement boundaries
+  // Enhanced state tracking for better instrumentation decisions
   var inMultiLineConstruct = false;
+  var inTemplateLiteral = false;
+  var inArrayLiteral = false;
+  var inObjectLiteral = false;
   var braceDepth = 0;
+  var arrayDepth = 0;
+  var templateDepth = 0;
   var multiLineConstructStartLine = 0;
 
   for (var i = 0; i < lines.length; i++) {
@@ -195,9 +207,46 @@ function wrapCodeForVariableTracking(code) {
       continue;
     }
 
-    // Detect start of multi-line constructs
-    if (line.match(/^(class|function)\s+/) || line.includes('{')) {
-      if (!inMultiLineConstruct && line.includes('{')) {
+    // Detect template literals (multi-line)
+    var templateMatches = line.match(/`/g);
+    if (templateMatches) {
+      templateDepth += templateMatches.length;
+      if (templateDepth % 2 === 1) {
+        inTemplateLiteral = true;
+      } else {
+        inTemplateLiteral = false;
+      }
+    }
+
+    // Skip instrumentation if we're inside a template literal
+    if (inTemplateLiteral) {
+      continue;
+    }
+
+    // Detect array literals more carefully (only single-line arrays affect next line)
+    var openBrackets = (line.match(/\[/g) || []).length;
+    var closeBrackets = (line.match(/\]/g) || []).length;
+    
+    // Only consider unmatched brackets on the current line
+    if (openBrackets > closeBrackets) {
+      arrayDepth += (openBrackets - closeBrackets);
+      inArrayLiteral = true;
+    } else if (closeBrackets > openBrackets) {
+      arrayDepth -= (closeBrackets - openBrackets);
+      if (arrayDepth <= 0) {
+        arrayDepth = 0;
+        inArrayLiteral = false;
+      }
+    }
+
+    // Skip instrumentation if we're inside an unclosed array literal
+    if (inArrayLiteral && arrayDepth > 0) {
+      continue;
+    }
+
+    // Detect start of true multi-line constructs (classes, functions, not object literals)
+    if (line.match(/^(class|function)\s+/) || (line.includes('{') && line.match(/^\s*(class|function)/))) {
+      if (!inMultiLineConstruct && line.includes('{') && !line.includes('}')) {
         inMultiLineConstruct = true;
         multiLineConstructStartLine = originalLineNumber;
         braceDepth = 1;
@@ -220,16 +269,59 @@ function wrapCodeForVariableTracking(code) {
         wrappedLines.push(`(function() { __tracer.call(this, ${multiLineConstructStartLine}); }).call(this);`);
         inMultiLineConstruct = false;
       } else if (!inMultiLineConstruct) {
-        // Simple statement
-        wrappedLines.push(`(function() { __tracer.call(this, ${originalLineNumber}); }).call(this);`);
+        // Simple statement - but avoid object/array literals and specific patterns
+        var shouldSkip = false;
+        
+        // Skip if line is part of object literal (contains comma and is between braces)
+        if (line.includes(',') && (line.includes('{') || line.includes('[') || 
+            line.match(/^\s*\w+:\s*/) || line.match(/^\s*"[^"]*":\s*/) || line.match(/^\s*'[^']*':\s*/))) {
+          shouldSkip = true;
+        }
+        
+        // Skip if line is just an object/array property
+        if (line.match(/^\s*\w+:\s*.+[,}]?\s*$/) || line.match(/^\s*"[^"]*":\s*.+[,}]?\s*$/)) {
+          shouldSkip = true;
+        }
+        
+        if (!shouldSkip) {
+          wrappedLines.push(`(function() { __tracer.call(this, ${originalLineNumber}); }).call(this);`);
+        }
       }
     }
   }
 
-  // Store the original code globally for source mapping
-  global.__originalCode = code;
-
   return wrappedLines.join("\n");
+}
+
+// Determine if a line should be instrumented with a tracer
+function shouldInstrumentLine(line) {
+  // Skip pure structural lines (just opening/closing braces)
+  if (line === "{" || line === "}") {
+    return false;
+  }
+  
+  // Skip lines that are just whitespace or punctuation
+  if (/^\s*[{}();,]\s*$/.test(line)) {
+    return false;
+  }
+  
+  // Skip class/function declarations and method signatures (but not their bodies)
+  if (/^(class\s+\w+|function\s+\w+|constructor\s*\(|\w+\s*\([^)]*\)\s*\{?\s*)$/.test(line)) {
+    return false;
+  }
+
+  // Skip standalone method names in classes (like "greet() {")
+  if (/^\s*\w+\s*\([^)]*\)\s*\{?\s*$/.test(line)) {
+    return false;
+  }
+
+  // Instrument all other meaningful lines including:
+  // - Variable declarations and assignments
+  // - Function calls
+  // - Return statements  
+  // - Lines inside function/class/arrow function bodies
+  // - Control flow statements (if, for, while, etc.)
+  return true;
 }
 
 // Instrument variable assignments to track them
@@ -308,16 +400,29 @@ function createEnhancedSandbox() {
     // Global user variables tracker
     __userVars: globalUserVars,
 
-    // Tracer function to capture execution state - make it a global variable
+    // Tracer function to capture execution state with enhanced source mapping
     __tracer: function (lineNumber) {
-      currentLine = lineNumber;
+      // Map transpiled line numbers back to original source if source map is available
+      var originalLineNumber = lineNumber;
+      if (global.__sourceMap && global.__sourceMap.mappings) {
+        try {
+          // For now, use the provided line number as-is since we're preserving line numbers
+          // In future iterations, this could be enhanced with full source map decoding
+          originalLineNumber = lineNumber;
+        } catch (e) {
+          // Fall back to provided line number on source map errors
+          originalLineNumber = lineNumber;
+        }
+      }
+      
+      currentLine = originalLineNumber;
       executed_lines++;
 
       if (executed_lines > MAX_EXECUTED_LINES) {
         throw new Error("Maximum execution limit exceeded (too many steps)");
       }
 
-      // Enhanced variable capture - need to access sandbox context directly
+      // Enhanced variable capture with better context handling
       var currentVars = {};
       var foundVars = [];
       
@@ -364,12 +469,12 @@ function createEnhancedSandbox() {
         }
         
       } catch (e) {
-        output += `[DEBUG Line ${lineNumber}] Error capturing variables: ${e.message}\n`;
+        output += `[DEBUG Line ${originalLineNumber}] Error capturing variables: ${e.message}\n`;
       }
 
       trace.push({
-        line: lineNumber,
-        event: "step_line",
+        line: originalLineNumber,
+        event: "step_line", 
         func_name: "<module>",
         globals: currentVars,
         ordered_globals: Object.keys(currentVars),
