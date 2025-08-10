@@ -1,0 +1,99 @@
+name: Auto-Merge Safe PRs
+
+on:
+  pull_request:
+    types: [labeled, unlabeled, synchronize]
+
+jobs:
+  auto-merge:
+    name: Auto-merge dependabot PRs
+    runs-on: ubuntu-latest
+    if: |
+      github.actor == 'dependabot[bot]' &&
+      contains(github.event.pull_request.labels.*.name, 'dependencies') &&
+      github.event.pull_request.draft == false
+
+    steps:
+      - name: Wait for status checks
+        uses: WyriHaximus/github-action-wait-for-status@v1.7
+        with:
+          ignoreActions: "Auto-merge dependabot PRs"
+          checkInterval: 30
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Auto-merge Dependabot PRs
+        uses: pascalgn/merge-action@v0.15.6
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          merge_method: squash
+          merge_commit_title: ${{ github.event.pull_request.title }}
+          merge_commit_message: |
+            ${{ github.event.pull_request.body }}
+
+            Auto-merged by GitHub Actions (dependabot)
+
+  label-pr:
+    name: Label Pull Request
+    runs-on: ubuntu-latest
+    if: github.event.action == 'opened'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Label based on files changed
+        uses: actions/labeler@v5
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          configuration-path: .github/labeler.yml
+          sync-labels: true
+
+  pr-size-check:
+    name: Check PR Size
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check PR size
+        run: |
+          # Count changed lines
+          CHANGED_LINES=$(git diff --numstat ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }} | awk '{sum += $1 + $2} END {print sum}')
+
+          echo "Changed lines: $CHANGED_LINES"
+
+          if [ "$CHANGED_LINES" -gt 1000 ]; then
+            echo "::warning::This PR is quite large ($CHANGED_LINES lines changed). Consider breaking it into smaller PRs for easier review."
+          elif [ "$CHANGED_LINES" -gt 500 ]; then
+            echo "::notice::This PR is moderately large ($CHANGED_LINES lines changed)."
+          else
+            echo "✅ PR size is reasonable ($CHANGED_LINES lines changed)."
+          fi
+
+  conventional-commits:
+    name: Check Conventional Commits
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check commit messages
+        run: |
+          echo "=== Checking Conventional Commits ==="
+
+          # Get commits in this PR
+          git log --pretty=format:"%s" ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }} > commits.txt
+
+          # Check each commit message
+          while IFS= read -r commit; do
+            if echo "$commit" | grep -qE "^(feat|fix|docs|style|refactor|test|chore|ci|perf|build|revert)(\(.+\))?: .+"; then
+              echo "✅ $commit"
+            else
+              echo "::warning::Non-conventional commit: $commit"
+            fi
+          done < commits.txt
+        continue-on-error: true

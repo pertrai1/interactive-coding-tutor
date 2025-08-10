@@ -1,0 +1,106 @@
+# Configuration for the GitHub labeler action
+# https://github.com/actions/labeler
+
+# Frontend changes
+frontend:
+  - v5-unity/**/*
+  - "v5-unity/**/*.ts"
+  - "v5-unity/**/*.js"
+  - "v5-unity/**/*.html"
+  - "v5-unity/**/*.css"
+  - "v5-unity/package.json"
+  - "v5-unity/vite.config.ts"
+  - "v5-unity/tsconfig.json"
+
+# Backend changes
+backend:
+  - v4-cokapi/**/*
+  - "v4-cokapi/**/*.js"
+  - "v4-cokapi/package.json"
+  - "v4-cokapi/Dockerfile"
+
+# Python changes
+python:
+  - "**/*.py"
+  - requirements.txt
+  - runtime.txt
+
+# Docker changes
+docker:
+  - "**/Dockerfile"
+  - docker-compose.yml
+  - start-docker.sh
+  - test-docker.sh
+
+# Documentation changes
+documentation:
+  - "*.md"
+  - "**/*.md"
+  - docs/**/*
+
+# Configuration changes
+config:
+  - "*.json"
+  - "*.yml"
+  - "*.yaml"
+  - "*.toml"
+  - ".github/**/*"
+
+# Dependencies
+dependencies:
+  - package.json
+  - package-lock.json
+  - requirements.txt
+  - "**/package.json"
+  - "**/package-lock.json"
+
+# Tests
+tests:
+  - "test*"
+  - "**/*test*"
+  - "**/*.test.*"
+  - "**/*.spec.*"
+
+# TypeScript
+typescript:
+  - "**/*.ts"
+  - tsconfig.json
+  - "**/tsconfig.json"
+
+# JavaScript
+javascript:
+  - "**/*.js"
+  - ".eslintrc*"
+  - "**/.eslintrc*"
+
+# Security
+security:
+  - ".github/workflows/security.yml"
+  - "**/*security*"
+  - "**/*audit*"
+
+# Performance
+performance:
+  - ".github/workflows/performance.yml"
+  - "**/*performance*"
+  - "**/*benchmark*"
+
+# CI/CD
+ci-cd:
+  - ".github/**/*"
+  - "*.yml"
+  - "*.yaml"
+  - Dockerfile
+  - docker-compose.yml
+
+# Breaking changes (manual label)
+breaking-change:
+  - never_match_anything
+
+# Bug fixes (manual label)
+bug:
+  - never_match_anything
+
+# New features (manual label)
+enhancement:
+  - never_match_anything

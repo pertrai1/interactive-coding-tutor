@@ -1,0 +1,116 @@
+name: Code Quality
+
+on:
+  pull_request:
+    branches: [master, main]
+  push:
+    branches: [master, main]
+
+jobs:
+  eslint:
+    name: ESLint Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Install ESLint and basic config
+        run: |
+          npm install -g eslint @typescript-eslint/parser @typescript-eslint/eslint-plugin
+
+      - name: Create ESLint config
+        run: |
+          cat > .eslintrc.js << 'EOF'
+          module.exports = {
+            parser: '@typescript-eslint/parser',
+            plugins: ['@typescript-eslint'],
+            extends: [
+              'eslint:recommended',
+              '@typescript-eslint/recommended'
+            ],
+            env: {
+              node: true,
+              browser: true,
+              es6: true
+            },
+            rules: {
+              '@typescript-eslint/no-unused-vars': 'warn',
+              '@typescript-eslint/no-explicit-any': 'warn',
+              'no-console': 'warn',
+              'no-debugger': 'error'
+            }
+          };
+          EOF
+
+      - name: Run ESLint on TypeScript files
+        run: |
+          # Run ESLint on frontend TypeScript files
+          eslint "v5-unity/**/*.{js,ts}" --max-warnings 50 || true
+
+          # Run ESLint on backend JavaScript files
+          eslint "v4-cokapi/**/*.js" --env node --max-warnings 20 || true
+        continue-on-error: true
+
+  prettier:
+    name: Code Formatting Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Install Prettier
+        run: npm install -g prettier
+
+      - name: Check code formatting
+        run: |
+          # Create basic prettier config
+          echo '{"semi": true, "singleQuote": true, "tabWidth": 2}' > .prettierrc
+
+          # Check TypeScript/JavaScript formatting
+          prettier --check "v5-unity/**/*.{js,ts,json}" "v4-cokapi/**/*.{js,json}" || {
+            echo "::warning::Code formatting issues found. Run 'prettier --write' to fix."
+            exit 0
+          }
+        continue-on-error: true
+
+  dependency-check:
+    name: Dependency Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Check for outdated dependencies
+        run: |
+          echo "=== Frontend Dependencies ==="
+          cd v5-unity && npm outdated || true
+
+          echo "=== Backend Dependencies ==="
+          cd ../v4-cokapi && npm outdated || true
+        continue-on-error: true
+
+      - name: Check for unused dependencies
+        run: |
+          npm install -g depcheck
+
+          echo "=== Frontend Unused Dependencies ==="
+          cd v5-unity && depcheck || true
+
+          echo "=== Backend Unused Dependencies ==="
+          cd ../v4-cokapi && depcheck || true
+        continue-on-error: true

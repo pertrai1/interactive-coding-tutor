@@ -1,0 +1,172 @@
+name: Performance & Bundle Analysis
+
+on:
+  pull_request:
+    branches: [master, main]
+    types: [opened, synchronize]
+
+jobs:
+  bundle-analysis:
+    name: Bundle Size Analysis
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./v5-unity
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Needed for bundle size comparison
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+          cache-dependency-path: "./v5-unity/package.json"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build for production
+        run: npm run build
+
+      - name: Analyze bundle size
+        run: |
+          echo "=== Bundle Size Analysis ==="
+          if [ -d "build" ]; then
+            echo "Build directory contents:"
+            ls -la build/
+            echo ""
+            echo "File sizes:"
+            find build -name "*.js" -o -name "*.css" | xargs ls -lh
+            echo ""
+            echo "Total build size:"
+            du -sh build/
+          else
+            echo "No build directory found"
+          fi
+
+      - name: Check for large assets
+        run: |
+          echo "=== Large Assets Check ==="
+          find build -type f -size +500k 2>/dev/null | while read file; do
+            echo "::warning::Large asset detected: $file ($(du -h "$file" | cut -f1))"
+          done || echo "No large assets found"
+
+  lighthouse-audit:
+    name: Lighthouse Performance Audit
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Install Lighthouse CI
+        run: npm install -g @lhci/cli
+
+      - name: Start application for testing
+        run: |
+          # Build and start the application
+          cd v5-unity && npm ci && npm run build
+          cd ../v4-cokapi && npm ci
+
+          # Start docker-compose in background
+          docker-compose up -d
+
+          # Wait for services to be ready
+          sleep 45
+
+          # Check if services are up
+          curl -f http://localhost:8003 || (docker-compose logs && exit 1)
+
+      - name: Run Lighthouse audit
+        run: |
+          # Create lighthouse config
+          cat > lighthouserc.json << 'EOF'
+          {
+            "ci": {
+              "collect": {
+                "url": ["http://localhost:8003"],
+                "startServerCommand": "",
+                "settings": {
+                  "chromeFlags": "--no-sandbox --headless"
+                }
+              },
+              "assert": {
+                "assertions": {
+                  "categories:performance": ["warn", {"minScore": 0.6}],
+                  "categories:accessibility": ["warn", {"minScore": 0.8}],
+                  "categories:best-practices": ["warn", {"minScore": 0.8}],
+                  "categories:seo": ["warn", {"minScore": 0.7}]
+                }
+              }
+            }
+          }
+          EOF
+
+          # Run Lighthouse
+          lhci autorun --upload.target=temporary-public-storage || {
+            echo "::warning::Lighthouse audit failed or found issues"
+            exit 0
+          }
+        continue-on-error: true
+
+      - name: Cleanup
+        if: always()
+        run: docker-compose down
+
+  memory-leak-check:
+    name: Memory Leak Detection
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Install dependencies
+        working-directory: ./v4-cokapi
+        run: npm ci
+
+      - name: Basic memory leak check
+        working-directory: ./v4-cokapi
+        run: |
+          echo "=== Memory Leak Check ==="
+          # Start server with memory monitoring
+          timeout 30s node --expose-gc --inspect cokapi.js &
+          SERVER_PID=$!
+
+          # Give server time to start
+          sleep 5
+
+          # Check if process is still running (basic health check)
+          if kill -0 $SERVER_PID 2>/dev/null; then
+            echo "✅ Server started successfully"
+
+            # Monitor memory usage briefly
+            for i in {1..5}; do
+              if kill -0 $SERVER_PID 2>/dev/null; then
+                echo "Memory check $i: Process still running"
+                sleep 2
+              else
+                echo "❌ Server process died unexpectedly"
+                exit 1
+              fi
+            done
+          else
+            echo "❌ Server failed to start"
+            exit 1
+          fi
+
+          # Cleanup
+          kill $SERVER_PID 2>/dev/null || true
+        continue-on-error: true

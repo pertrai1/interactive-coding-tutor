@@ -1,0 +1,166 @@
+name: Security Scan
+
+on:
+  pull_request:
+    branches: [master, main]
+  push:
+    branches: [master, main]
+  schedule:
+    # Run security scan weekly on Sundays
+    - cron: "0 2 * * 0"
+
+jobs:
+  secret-scan:
+    name: Secret Detection
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Needed for secret scanning history
+
+      - name: Run TruffleHog
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: main
+          head: HEAD
+          extra_args: --debug --only-verified
+        continue-on-error: true
+
+  vulnerability-scan:
+    name: Vulnerability Assessment
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Install dependencies and run audit
+        run: |
+          echo "=== Frontend Security Audit ==="
+          cd v5-unity
+          npm ci
+          npm audit --audit-level moderate || {
+            echo "::warning::Frontend dependencies have security vulnerabilities"
+            npm audit --audit-level moderate --json > ../frontend-audit.json || true
+          }
+
+          echo "=== Backend Security Audit ==="
+          cd ../v4-cokapi
+          npm ci
+          npm audit --audit-level moderate || {
+            echo "::warning::Backend dependencies have security vulnerabilities"
+            npm audit --audit-level moderate --json > ../backend-audit.json || true
+          }
+
+      - name: Python security check
+        run: |
+          echo "=== Python Security Check ==="
+          pip install safety bandit
+
+          # Check for known vulnerabilities in Python dependencies
+          safety check -r requirements.txt || {
+            echo "::warning::Python dependencies have security vulnerabilities"
+          }
+
+          # Basic Python security analysis
+          bandit -r v5-unity/ -f json -o bandit-report.json || {
+            echo "::warning::Potential security issues found in Python code"
+          }
+        continue-on-error: true
+
+      - name: Upload security reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-reports
+          path: |
+            *-audit.json
+            bandit-report.json
+          retention-days: 30
+
+  docker-security:
+    name: Docker Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build images for scanning
+        run: |
+          docker build -t frontend-security:latest ./v5-unity
+          docker build -t backend-security:latest ./v4-cokapi
+
+      - name: Run Trivy vulnerability scanner - Frontend
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: "frontend-security:latest"
+          format: "sarif"
+          output: "trivy-frontend-results.sarif"
+        continue-on-error: true
+
+      - name: Run Trivy vulnerability scanner - Backend
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: "backend-security:latest"
+          format: "sarif"
+          output: "trivy-backend-results.sarif"
+        continue-on-error: true
+
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: "trivy-frontend-results.sarif"
+        continue-on-error: true
+
+  license-check:
+    name: License Compliance
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Install license checker
+        run: npm install -g license-checker
+
+      - name: Check frontend licenses
+        working-directory: ./v5-unity
+        run: |
+          npm ci
+          echo "=== Frontend License Report ==="
+          license-checker --summary || true
+          license-checker --csv --out ../frontend-licenses.csv || true
+        continue-on-error: true
+
+      - name: Check backend licenses
+        working-directory: ./v4-cokapi
+        run: |
+          npm ci
+          echo "=== Backend License Report ==="
+          license-checker --summary || true
+          license-checker --csv --out ../backend-licenses.csv || true
+        continue-on-error: true
+
+      - name: Upload license reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: license-reports
+          path: |
+            frontend-licenses.csv
+            backend-licenses.csv
+          retention-days: 30

@@ -1,0 +1,215 @@
+name: Pull Request Checks
+
+on:
+  pull_request:
+    branches: [master, main]
+  push:
+    branches: [master, main]
+
+jobs:
+  # Frontend TypeScript/JavaScript checks
+  frontend-checks:
+    name: Frontend Build & Type Check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./v5-unity
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+          cache-dependency-path: "./v5-unity/package.json"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript type check
+        run: npx tsc --noEmit
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: ./v5-unity/build/
+          retention-days: 7
+
+  # Backend Node.js checks
+  backend-checks:
+    name: Backend Build & Lint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./v4-cokapi
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+          cache-dependency-path: "./v4-cokapi/package.json"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check for syntax errors
+        run: node -c cokapi.js
+
+      - name: Test backend startup
+        run: timeout 10s node cokapi.js || [ $? -eq 124 ]
+
+  # Python checks for bottle server
+  python-checks:
+    name: Python Server Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Python syntax check
+        run: python -m py_compile v5-unity/bottle_server.py
+
+      - name: Check Python imports
+        run: python -c "import sys; sys.path.append('v5-unity'); import bottle_server"
+
+  # Docker build tests
+  docker-build:
+    name: Docker Build Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build frontend Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./v5-unity
+          push: false
+          tags: frontend:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build backend Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./v4-cokapi
+          push: false
+          tags: backend:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # Security and dependency checks
+  security-checks:
+    name: Security & Dependency Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Run npm audit (Frontend)
+        working-directory: ./v5-unity
+        run: |
+          npm ci
+          npm audit --audit-level moderate
+        continue-on-error: true
+
+      - name: Run npm audit (Backend)
+        working-directory: ./v4-cokapi
+        run: |
+          npm ci
+          npm audit --audit-level moderate
+        continue-on-error: true
+
+      - name: Check for Python security issues
+        run: |
+          pip install safety
+          safety check -r requirements.txt
+        continue-on-error: true
+
+  # File and code quality checks
+  code-quality:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for large files
+        run: |
+          find . -type f -size +10M -not -path "./.git/*" -not -path "./node_modules/*" | \
+          while read file; do
+            echo "::warning::Large file detected: $file ($(du -h "$file" | cut -f1))"
+          done
+
+      - name: Check for common issues
+        run: |
+          # Check for TODO/FIXME comments that might need attention
+          echo "=== TODO/FIXME items found ==="
+          grep -r "TODO\|FIXME" --include="*.js" --include="*.ts" --include="*.py" . || echo "None found"
+
+          # Check for console.log statements (should be removed in production)
+          echo "=== console.log statements found ==="
+          grep -r "console\.log" --include="*.js" --include="*.ts" . || echo "None found"
+
+          # Check for any hardcoded credentials or keys
+          echo "=== Potential security issues ==="
+          grep -ri "password\|secret\|key\|token" --include="*.js" --include="*.ts" --include="*.py" . | \
+          grep -v "package-lock.json" | grep -v "node_modules" || echo "None found"
+
+  # Integration test with docker-compose
+  integration-test:
+    name: Integration Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Test docker-compose setup
+        run: |
+          # Test that docker-compose file is valid
+          docker-compose config
+
+          # Build images
+          docker-compose build
+
+          # Start services in background
+          docker-compose up -d
+
+          # Wait for services to be ready
+          sleep 30
+
+          # Test frontend is responding
+          curl -f http://localhost:8003 || (docker-compose logs && exit 1)
+
+          # Test backend is responding
+          curl -f http://localhost:3000 || (docker-compose logs && exit 1)
+
+          # Cleanup
+          docker-compose down
