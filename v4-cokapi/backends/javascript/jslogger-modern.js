@@ -173,8 +173,13 @@ function wrapCodeForVariableTracking(code) {
   var lines = code.split("\n");
   var wrappedLines = [];
 
-  // Add tracer setup
-  wrappedLines.push("var __tracer = this.__tracer;");
+  // __tracer is already available as a global in the sandbox context
+  // No need to set it up - it's injected by the VM context
+
+  // Smart instrumentation: only add tracers at valid statement boundaries
+  var inMultiLineConstruct = false;
+  var braceDepth = 0;
+  var multiLineConstructStartLine = 0;
 
   for (var i = 0; i < lines.length; i++) {
     var line = lines[i].trim();
@@ -185,11 +190,39 @@ function wrapCodeForVariableTracking(code) {
     var processedLine = instrumentVariableAssignments(originalLine);
     wrappedLines.push(processedLine);
 
-    // Only add tracer for non-empty, non-comment lines
-    if (line !== "" && !line.startsWith("//") && !line.startsWith("/*")) {
-      // Add tracer call AFTER each line with original line number
-      // Call tracer with the current context bound to get proper variable access
-      wrappedLines.push(`__tracer.call(this, ${originalLineNumber});`);
+    // Skip empty lines and comments
+    if (line === "" || line.startsWith("//") || line.startsWith("/*")) {
+      continue;
+    }
+
+    // Detect start of multi-line constructs
+    if (line.match(/^(class|function)\s+/) || line.includes('{')) {
+      if (!inMultiLineConstruct && line.includes('{')) {
+        inMultiLineConstruct = true;
+        multiLineConstructStartLine = originalLineNumber;
+        braceDepth = 1;
+      } else if (inMultiLineConstruct) {
+        // Count braces to track nesting
+        braceDepth += (line.match(/\{/g) || []).length;
+        braceDepth -= (line.match(/\}/g) || []).length;
+      }
+    } else if (inMultiLineConstruct) {
+      // Count braces in continued multi-line constructs
+      braceDepth += (line.match(/\{/g) || []).length;
+      braceDepth -= (line.match(/\}/g) || []).length;
+    }
+
+    // Add tracer call only at valid boundaries
+    if (!inMultiLineConstruct || braceDepth === 0) {
+      // End of multi-line construct or standalone statement
+      if (inMultiLineConstruct && braceDepth === 0) {
+        // Add tracer for the completed multi-line construct
+        wrappedLines.push(`(function() { __tracer.call(this, ${multiLineConstructStartLine}); }).call(this);`);
+        inMultiLineConstruct = false;
+      } else if (!inMultiLineConstruct) {
+        // Simple statement
+        wrappedLines.push(`(function() { __tracer.call(this, ${originalLineNumber}); }).call(this);`);
+      }
     }
   }
 
@@ -241,6 +274,16 @@ function isBuiltInVariable(varName) {
     "isFinite",
     "encodeURIComponent",
     "decodeURIComponent",
+    // Add Node.js and modern environment globals
+    "globalThis",
+    "global",
+    "Intl",
+    "Reflect",
+    "Atomics",
+    "WebAssembly",
+    "WeakRef",
+    "FinalizationRegistry",
+    "SharedArrayBuffer",
   ];
   return builtins.includes(varName);
 }
@@ -265,7 +308,7 @@ function createEnhancedSandbox() {
     // Global user variables tracker
     __userVars: globalUserVars,
 
-    // Tracer function to capture execution state
+    // Tracer function to capture execution state - make it a global variable
     __tracer: function (lineNumber) {
       currentLine = lineNumber;
       executed_lines++;
@@ -283,6 +326,7 @@ function createEnhancedSandbox() {
         var sandboxContext = this;
         
         // Capture all user-defined variables in the sandbox scope  
+        // First try regular enumerable properties
         for (var key in sandboxContext) {
           if (
             sandboxContext.hasOwnProperty &&
@@ -296,6 +340,27 @@ function createEnhancedSandbox() {
             currentVars[key] = serializeValue(sandboxContext[key]);
             foundVars.push(key);
           }
+        }
+        
+        // Also try Object.getOwnPropertyNames for non-enumerable properties
+        try {
+          var allProps = Object.getOwnPropertyNames(sandboxContext);
+          for (var i = 0; i < allProps.length; i++) {
+            var key = allProps[i];
+            if (
+              !key.startsWith("__") &&
+              key !== "console" &&
+              !isBuiltInVariable(key) &&
+              typeof sandboxContext[key] !== "function" &&
+              sandboxContext[key] !== undefined &&
+              !currentVars[key] // Don't duplicate
+            ) {
+              currentVars[key] = serializeValue(sandboxContext[key]);
+              foundVars.push(key);
+            }
+          }
+        } catch (e) {
+          // Ignore errors in property enumeration
         }
         
       } catch (e) {

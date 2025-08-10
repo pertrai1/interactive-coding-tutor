@@ -88,11 +88,12 @@ function transpileCode(code, filename = "user_script.js") {
  * @returns {boolean} - True if transpilation is likely needed
  */
 function needsTranspilation(code) {
-  // Check for modern JavaScript features that need transpilation for VM compatibility
+  // Only transpile features that truly need it for Node.js 20+ compatibility
+  // Classes, let/const, arrow functions work natively
   const modernFeatures = [
-    /\bimport\s+/, // ES6 imports
-    /\bexport\s+/, // ES6 exports
-    /\bclass\s+/, // ES6 classes (need transpilation for VM context)
+    /\bimport\s+/, // ES6 imports - need transpilation
+    /\bexport\s+/, // ES6 exports - need transpilation
+    // Removed class check - classes work natively in Node.js 20+
   ];
 
   return modernFeatures.some((pattern) => pattern.test(code));
