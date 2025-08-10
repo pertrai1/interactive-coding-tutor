@@ -93,11 +93,14 @@ function traceExecution(code) {
     stepCount = 0;
     currentLine = 1;
 
-    // Step 1: Babel transpilation for modern JavaScript features (if needed)
-    var workingCode = code;
+    // Step 1: Apply line-by-line instrumentation to original code first
+    var instrumentedOriginalCode = wrapCodeForVariableTracking(code);
+
+    // Step 2: Check if transpilation is needed and apply it to the instrumented code
+    var workingCode = instrumentedOriginalCode;
     var sourceMap = null;
     if (babelConfig.needsTranspilation(code)) {
-      var babelResult = babelConfig.transpileCode(code);
+      var babelResult = babelConfig.transpileCode(instrumentedOriginalCode);
       if (babelResult.success) {
         workingCode = babelResult.code;
         sourceMap = babelResult.map;
@@ -123,20 +126,16 @@ function traceExecution(code) {
       }
     }
 
-    // Step 2: Transform let/const to var for better variable tracking
+    // Step 3: Transform let/const to var for better variable tracking
     var transformedCode = workingCode
       .replace(/\blet\s+/g, "var ")
       .replace(/\bconst\s+/g, "var ");
 
-    // Step 3: Create a modified code with variable assignments wrapped to track them
-    // Apply instrumentation to the transpiled code to avoid syntax conflicts
-    var instrumentedCode = wrapCodeForVariableTracking(transformedCode);
-
     // Step 4: Create enhanced sandbox with tracer function
     var sandbox = createEnhancedSandbox();
 
-    // Step 5: Execute the instrumented code
-    vm.runInContext(instrumentedCode, sandbox, {
+    // Step 5: Execute the transformed code (already instrumented)
+    vm.runInContext(transformedCode, sandbox, {
       filename: "user_script.js",
       timeout: 5000, // 5 second timeout
     });
@@ -174,9 +173,13 @@ function wrapCodeForVariableTracking(code) {
   var lines = code.split("\n");
   var wrappedLines = [];
 
-  // Add variable tracking setup
-  wrappedLines.push("var __tracer = this.__tracer;");
-  wrappedLines.push("var __userVars = this.__userVars;");
+  // __tracer is already available as a global in the sandbox context
+  // No need to set it up - it's injected by the VM context
+
+  // Smart instrumentation: only add tracers at valid statement boundaries
+  var inMultiLineConstruct = false;
+  var braceDepth = 0;
+  var multiLineConstructStartLine = 0;
 
   for (var i = 0; i < lines.length; i++) {
     var line = lines[i].trim();
@@ -187,10 +190,39 @@ function wrapCodeForVariableTracking(code) {
     var processedLine = instrumentVariableAssignments(originalLine);
     wrappedLines.push(processedLine);
 
-    // Only add tracer for non-empty, non-comment lines
-    if (line !== "" && !line.startsWith("//") && !line.startsWith("/*")) {
-      // Add tracer call AFTER each line with original line number
-      wrappedLines.push(`__tracer(${originalLineNumber});`);
+    // Skip empty lines and comments
+    if (line === "" || line.startsWith("//") || line.startsWith("/*")) {
+      continue;
+    }
+
+    // Detect start of multi-line constructs
+    if (line.match(/^(class|function)\s+/) || line.includes('{')) {
+      if (!inMultiLineConstruct && line.includes('{')) {
+        inMultiLineConstruct = true;
+        multiLineConstructStartLine = originalLineNumber;
+        braceDepth = 1;
+      } else if (inMultiLineConstruct) {
+        // Count braces to track nesting
+        braceDepth += (line.match(/\{/g) || []).length;
+        braceDepth -= (line.match(/\}/g) || []).length;
+      }
+    } else if (inMultiLineConstruct) {
+      // Count braces in continued multi-line constructs
+      braceDepth += (line.match(/\{/g) || []).length;
+      braceDepth -= (line.match(/\}/g) || []).length;
+    }
+
+    // Add tracer call only at valid boundaries
+    if (!inMultiLineConstruct || braceDepth === 0) {
+      // End of multi-line construct or standalone statement
+      if (inMultiLineConstruct && braceDepth === 0) {
+        // Add tracer for the completed multi-line construct
+        wrappedLines.push(`(function() { __tracer.call(this, ${multiLineConstructStartLine}); }).call(this);`);
+        inMultiLineConstruct = false;
+      } else if (!inMultiLineConstruct) {
+        // Simple statement
+        wrappedLines.push(`(function() { __tracer.call(this, ${originalLineNumber}); }).call(this);`);
+      }
     }
   }
 
@@ -202,8 +234,8 @@ function wrapCodeForVariableTracking(code) {
 
 // Instrument variable assignments to track them
 function instrumentVariableAssignments(line) {
-  // Temporarily disable variable instrumentation to debug
-  // TODO: Re-enable once we fix the syntax issues
+  // Simplified variable assignment tracking - just return the line as-is
+  // Variables will be captured directly from the sandbox context
   return line;
 }
 
@@ -219,6 +251,39 @@ function isBuiltInVariable(varName) {
     "Buffer",
     "__tracer",
     "__userVars",
+    // Add commonly captured built-ins that shouldn't be shown to students
+    "JSON",
+    "Math",
+    "Date",
+    "Array",
+    "Object",
+    "String",
+    "Number",
+    "Boolean",
+    "RegExp",
+    "Error",
+    "undefined",
+    "null",
+    "true",
+    "false",
+    "Infinity",
+    "NaN",
+    "parseInt",
+    "parseFloat",
+    "isNaN",
+    "isFinite",
+    "encodeURIComponent",
+    "decodeURIComponent",
+    // Add Node.js and modern environment globals
+    "globalThis",
+    "global",
+    "Intl",
+    "Reflect",
+    "Atomics",
+    "WebAssembly",
+    "WeakRef",
+    "FinalizationRegistry",
+    "SharedArrayBuffer",
   ];
   return builtins.includes(varName);
 }
@@ -243,7 +308,7 @@ function createEnhancedSandbox() {
     // Global user variables tracker
     __userVars: globalUserVars,
 
-    // Tracer function to capture execution state
+    // Tracer function to capture execution state - make it a global variable
     __tracer: function (lineNumber) {
       currentLine = lineNumber;
       executed_lines++;
@@ -252,32 +317,52 @@ function createEnhancedSandbox() {
         throw new Error("Maximum execution limit exceeded (too many steps)");
       }
 
-      // Simple variable capture from sandbox context
+      // Enhanced variable capture - need to access sandbox context directly
       var currentVars = {};
       var foundVars = [];
+      
       try {
-        for (var key in this) {
-          foundVars.push(key); // Track all keys for debugging
+        // Get reference to the actual sandbox context
+        var sandboxContext = this;
+        
+        // Capture all user-defined variables in the sandbox scope  
+        // First try regular enumerable properties
+        for (var key in sandboxContext) {
           if (
-            this.hasOwnProperty &&
-            this.hasOwnProperty(key) &&
+            sandboxContext.hasOwnProperty &&
+            sandboxContext.hasOwnProperty(key) &&
             !key.startsWith("__") &&
             key !== "console" &&
-            typeof this[key] !== "function"
+            !isBuiltInVariable(key) &&
+            typeof sandboxContext[key] !== "function" &&
+            sandboxContext[key] !== undefined // Only show initialized variables
           ) {
-            currentVars[key] = this[key];
+            currentVars[key] = serializeValue(sandboxContext[key]);
+            foundVars.push(key);
           }
         }
-        // Log to stdout for debugging
-        if (foundVars.length > 10) {
-          // Only log if we have many keys (to avoid spam)
-          output += `[DEBUG Line ${lineNumber}] Found ${foundVars.length} keys in context\n`;
+        
+        // Also try Object.getOwnPropertyNames for non-enumerable properties
+        try {
+          var allProps = Object.getOwnPropertyNames(sandboxContext);
+          for (var i = 0; i < allProps.length; i++) {
+            var key = allProps[i];
+            if (
+              !key.startsWith("__") &&
+              key !== "console" &&
+              !isBuiltInVariable(key) &&
+              typeof sandboxContext[key] !== "function" &&
+              sandboxContext[key] !== undefined &&
+              !currentVars[key] // Don't duplicate
+            ) {
+              currentVars[key] = serializeValue(sandboxContext[key]);
+              foundVars.push(key);
+            }
+          }
+        } catch (e) {
+          // Ignore errors in property enumeration
         }
-        if (Object.keys(currentVars).length > 0) {
-          output += `[DEBUG Line ${lineNumber}] Captured vars: ${JSON.stringify(
-            currentVars
-          )}\n`;
-        }
+        
       } catch (e) {
         output += `[DEBUG Line ${lineNumber}] Error capturing variables: ${e.message}\n`;
       }
