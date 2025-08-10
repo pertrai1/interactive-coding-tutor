@@ -254,9 +254,14 @@ if (local) {
 
   // POST endpoint for longer scripts (multiline support)
   app.post("/exec_js_native", function (req, res) {
+    console.log(
+      "🔧 POST /exec_js_native received request with body:",
+      req.body
+    );
     res.setHeader("Access-Control-Allow-Origin", "*"); // enable CORS
 
     var usrCod = req.body.user_script || req.query.user_script;
+    console.log("🔧 User code to execute:", usrCod);
 
     // Use system Node.js for modern ECMAScript support (ES2025+)
     var path = require("path");

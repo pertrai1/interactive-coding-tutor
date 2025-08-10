@@ -173,117 +173,57 @@ function traceExecution(code) {
 function wrapCodeForVariableTracking(code) {
   var lines = code.split("\n");
   var wrappedLines = [];
-  var lineMapping = {}; // Maps instrumented line numbers to original line numbers
 
-  // Use the global __userVars from the sandbox instead of creating a new one
+  // Add variable tracking setup
   wrappedLines.push("var __tracer = this.__tracer;");
-  var instrumentedLineNumber = 2; // Start at 2 because we added the tracer declaration
+  wrappedLines.push("var __userVars = this.__userVars;");
 
   for (var i = 0; i < lines.length; i++) {
     var line = lines[i].trim();
     var originalLineNumber = i + 1;
+    var originalLine = lines[i];
 
-    // Add the original line as-is
-    wrappedLines.push(lines[i]);
-    lineMapping[instrumentedLineNumber] = originalLineNumber;
-    instrumentedLineNumber++;
+    // Process the line to add variable tracking
+    var processedLine = instrumentVariableAssignments(originalLine);
+    wrappedLines.push(processedLine);
 
     // Only add tracer for non-empty, non-comment lines
     if (line !== "" && !line.startsWith("//") && !line.startsWith("/*")) {
       // Add tracer call AFTER each line with original line number
       wrappedLines.push(`__tracer(${originalLineNumber});`);
-      instrumentedLineNumber++;
     }
   }
 
-  // Store the line mapping globally so the tracer can use it
-  global.__lineMapping = lineMapping;
+  // Store the original code globally for source mapping
   global.__originalCode = code;
 
   return wrappedLines.join("\n");
 }
 
-// Process a line to wrap variable declarations and assignments
-function processVariableLine(line) {
-  // Handle multiple variable declarations on one line
-  var processedLine = line;
-
-  // Handle comma-separated variable declarations (common in Babel output)
-  // Split on commas but be careful about commas inside function calls or objects
-  if (processedLine.includes("var ") && processedLine.includes(",")) {
-    // Simple approach: process each assignment individually
-    processedLine = processedLine.replace(
-      /\b([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*([^,;]+)/g,
-      function (match, varName, value) {
-        // Skip internal Babel variables (starting with _) and builtins
-        if (
-          !varName.startsWith("_") &&
-          !isBuiltinGlobal(varName) &&
-          varName !== "__userVars" &&
-          varName !== "__tracer"
-        ) {
-          return `${varName} = __userVars.${varName} = ${value}`;
-        }
-        return match;
-      }
-    );
-  } else {
-    // Replace simple var declarations with tracking
-    processedLine = processedLine.replace(
-      /var\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*/g,
-      function (match, varName) {
-        return `var ${varName} = __userVars.${varName} = `;
-      }
-    );
-
-    // Also handle assignments to existing variables (but be careful not to double-wrap)
-    if (!processedLine.includes("__userVars")) {
-      processedLine = processedLine.replace(
-        /\b([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*([^=])/g,
-        function (match, varName, rest) {
-          if (
-            !isBuiltinGlobal(varName) &&
-            varName !== "__userVars" &&
-            varName !== "__tracer"
-          ) {
-            return `${varName} = __userVars.${varName} = ${rest}`;
-          }
-          return match;
-        }
-      );
-    }
-  }
-
-  return processedLine;
+// Instrument variable assignments to track them
+function instrumentVariableAssignments(line) {
+  // Temporarily disable variable instrumentation to debug
+  // TODO: Re-enable once we fix the syntax issues
+  return line;
 }
 
-// Instrument JavaScript code to add line-by-line tracing
-function instrumentCode(codeLines) {
-  var instrumentedLines = [];
-
-  // Add tracer setup at the beginning
-  instrumentedLines.push("var __tracer = this.__tracer;");
-  instrumentedLines.push("var __varTracker = this.__varTracker;");
-
-  for (var i = 0; i < codeLines.length; i++) {
-    var line = codeLines[i].trim();
-    var lineNumber = i + 1;
-
-    // Skip empty lines and comments for instrumentation, but preserve original line
-    if (line === "" || line.startsWith("//") || line.startsWith("/*")) {
-      instrumentedLines.push(codeLines[i]);
-      continue;
-    }
-
-    // Add tracer call before each significant line
-    instrumentedLines.push(`__tracer(${lineNumber});`);
-    instrumentedLines.push(codeLines[i]);
-  }
-
-  return instrumentedLines.join("\n");
+// Check if a variable name is a built-in that we shouldn't track
+function isBuiltInVariable(varName) {
+  const builtins = [
+    "console",
+    "window",
+    "document",
+    "setTimeout",
+    "setInterval",
+    "process",
+    "Buffer",
+    "__tracer",
+    "__userVars",
+  ];
+  return builtins.includes(varName);
 }
 
-// Create enhanced sandbox with comprehensive context
+// Create enhanced sandbox with variable tracking capabilities
 function createEnhancedSandbox() {
   var originalConsoleLog = console.log;
 
@@ -312,12 +252,34 @@ function createEnhancedSandbox() {
         throw new Error("Maximum execution limit exceeded (too many steps)");
       }
 
-      // Get user variables from our global tracker
+      // Simple variable capture from sandbox context
       var currentVars = {};
-      for (var key in globalUserVars) {
-        if (globalUserVars.hasOwnProperty(key)) {
-          currentVars[key] = serializeValue(globalUserVars[key]);
+      var foundVars = [];
+      try {
+        for (var key in this) {
+          foundVars.push(key); // Track all keys for debugging
+          if (
+            this.hasOwnProperty &&
+            this.hasOwnProperty(key) &&
+            !key.startsWith("__") &&
+            key !== "console" &&
+            typeof this[key] !== "function"
+          ) {
+            currentVars[key] = this[key];
+          }
         }
+        // Log to stdout for debugging
+        if (foundVars.length > 10) {
+          // Only log if we have many keys (to avoid spam)
+          output += `[DEBUG Line ${lineNumber}] Found ${foundVars.length} keys in context\n`;
+        }
+        if (Object.keys(currentVars).length > 0) {
+          output += `[DEBUG Line ${lineNumber}] Captured vars: ${JSON.stringify(
+            currentVars
+          )}\n`;
+        }
+      } catch (e) {
+        output += `[DEBUG Line ${lineNumber}] Error capturing variables: ${e.message}\n`;
       }
 
       trace.push({
@@ -377,6 +339,13 @@ function createEnhancedSandbox() {
 function captureVariables(scope) {
   var vars = {};
 
+  // Debug: log all available keys in scope
+  var allKeys = Object.getOwnPropertyNames(scope);
+  console.log(
+    "DEBUG - All scope keys:",
+    allKeys.filter((k) => !k.startsWith("__"))
+  );
+
   for (var key in scope) {
     if (
       scope.hasOwnProperty &&
@@ -387,10 +356,12 @@ function captureVariables(scope) {
       // Only include user-defined variables and functions
       !isBuiltinGlobal(key)
     ) {
+      console.log("DEBUG - Found user variable:", key, "=", scope[key]);
       vars[key] = serializeValue(scope[key]);
     }
   }
 
+  console.log("DEBUG - Captured variables:", vars);
   return vars;
 }
 

@@ -327,12 +327,12 @@ function initializeAceEditor() {
 console.log('Hello, Interactive Tutor!');
 
 // Try modern JavaScript features:
-const numbers = [1, 2, 3, 4, 5];
-const doubled = numbers.map(n => n * 2);
+var numbers = [1, 2, 3, 4, 5];
+var doubled = numbers.map(n => n * 2);
 console.log('Doubled:', doubled);
 
 // Arrow functions and safe destructuring
-const arrayLength = numbers.length;
+var arrayLength = numbers.length;
 console.log('Array length:', arrayLength);
 
 // Modern async/await

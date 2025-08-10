@@ -42,6 +42,9 @@ function initializeVisualization(code, trace, consoleOutput) {
   console.log("First few steps:");
   trace.slice(0, 5).forEach((step, index) => {
     console.log(`  Step ${index + 1}: Line ${step.line}, Event: ${step.event}`);
+    console.log(`    Globals:`, step.globals);
+    console.log(`    Stack frames:`, step.stack_to_render);
+    console.log(`    Heap objects:`, step.heap);
   });
   createVisualizationUI();
   updateVisualization();
@@ -140,11 +143,10 @@ function createVisualizationUI() {
 
     /* Execution line highlighting styles */
     .ace_execution_current {
-      background: #ffff00 !important;
-      border: 3px solid #ff0000 !important;
+      background: #ffff88 !important;
+      border-left: 4px solid #0066cc !important;
       position: relative !important;
       z-index: 1000 !important;
-      opacity: 1 !important;
     }
 
     .ace_execution_previous {
@@ -515,7 +517,6 @@ function updateCodeDisplay() {
   if (!renderCodeEditor) return;
   const currentTraceStep = renderExecutionTrace[renderCurrentStep];
   const currentLine = currentTraceStep?.line || 1;
-  console.log(`Step ${renderCurrentStep + 1}: Highlighting line ${currentLine}`, currentTraceStep);
   const prevTraceStep = renderCurrentStep > 0 ? renderExecutionTrace[renderCurrentStep - 1] : null;
   const nextTraceStep = renderCurrentStep < renderTotalSteps - 1 ? renderExecutionTrace[renderCurrentStep + 1] : null;
   const prevLine = prevTraceStep?.line;
@@ -529,36 +530,25 @@ function updateCodeDisplay() {
     }
   }
   if (nextLine && nextLine !== currentLine && nextLine !== prevLine) {
-    console.log(`Adding next line marker for line ${nextLine}, Ace index: ${nextLine - 1}`);
-    const nextMarker = session.addMarker(
-      new ace.Range(nextLine - 1, 0, nextLine - 1, Number.MAX_VALUE),
+    session.addMarker(
+      new ace.Range(nextLine - 2, 0, nextLine - 2, Number.MAX_VALUE),
       "ace_execution_next",
       "fullLine"
     );
-    console.log(`Added next line marker ${nextMarker} for line ${nextLine}`);
   }
   if (prevLine && prevLine !== currentLine) {
-    console.log(`Adding previous line marker for line ${prevLine}, Ace index: ${prevLine - 1}`);
-    const prevMarker = session.addMarker(
-      new ace.Range(prevLine - 1, 0, prevLine - 1, Number.MAX_VALUE),
+    session.addMarker(
+      new ace.Range(prevLine - 2, 0, prevLine - 2, Number.MAX_VALUE),
       "ace_execution_previous",
       "fullLine"
     );
-    console.log(`Added previous line marker ${prevMarker} for line ${prevLine}`);
   }
   {
-    console.log(`Step ${renderCurrentStep + 1}: Highlighting line ${currentLine}, Ace index: ${currentLine - 1}`);
-    console.log(`Ace Range: ${currentLine - 1} to ${currentLine - 1}`);
-    const sourceLines = renderSourceCode.split("\n");
-    console.log(`Source line ${currentLine}: "${sourceLines[currentLine - 1]}"`);
-    console.log(`Source line ${currentLine - 1}: "${sourceLines[currentLine - 2]}"`);
-    console.log(`Source line ${currentLine + 1}: "${sourceLines[currentLine]}"`);
-    const marker = session.addMarker(
-      new ace.Range(currentLine - 1, 0, currentLine - 1, Number.MAX_VALUE),
+    session.addMarker(
+      new ace.Range(currentLine - 2, 0, currentLine - 2, Number.MAX_VALUE),
       "ace_execution_current",
       "fullLine"
     );
-    console.log(`Added current line marker ${marker} for line ${currentLine}`);
     renderCodeEditor.scrollToLine(currentLine - 1, true, true, () => {
     });
     const lineInfo = document.getElementById("lineInfo");
@@ -595,9 +585,15 @@ function updateStackFrames() {
 }
 function updateGlobalVariables(table, traceStep) {
   const globals = traceStep?.globals || {};
+  console.log("updateGlobalVariables called with:", {
+    traceStep,
+    globals,
+    globalKeys: Object.keys(globals)
+  });
   let html = "";
   for (const [name, value] of Object.entries(globals)) {
     if (!isBuiltInObject(name)) {
+      console.log(`Adding global variable: ${name} = ${value}`);
       html += `
         <tr>
           <td class="stackFrameVar">${escapeHtml(name)}</td>
@@ -606,6 +602,7 @@ function updateGlobalVariables(table, traceStep) {
       `;
     }
   }
+  console.log("Generated HTML for globals:", html);
   table.innerHTML = html;
 }
 function createStackFrame(frame, index) {

@@ -63,6 +63,12 @@ function initializeVisualization(
   console.log("First few steps:");
   trace.slice(0, 5).forEach((step, index) => {
     console.log(`  Step ${index + 1}: Line ${step.line}, Event: ${step.event}`);
+    console.log(`    Globals:`, step.globals);
+    console.log(`    Stack frames:`, step.stack_to_render);
+    console.log(`    Heap objects:`, step.heap);
+    if (step.stdout) {
+      console.log(`    Console output:`, step.stdout);
+    }
   });
 
   createVisualizationUI();
@@ -165,11 +171,10 @@ function createVisualizationUI() {
 
     /* Execution line highlighting styles */
     .ace_execution_current {
-      background: #ffff00 !important;
-      border: 3px solid #ff0000 !important;
+      background: #ffff88 !important;
+      border-left: 4px solid #0066cc !important;
       position: relative !important;
       z-index: 1000 !important;
-      opacity: 1 !important;
     }
 
     .ace_execution_previous {
@@ -463,10 +468,11 @@ function initializeRenderCodeEditor() {
 
   // Configure read-only appearance
   renderCodeEditor.setHighlightActiveLine(false);
-  
+
   // Hide cursor completely using type assertion
   try {
-    (renderCodeEditor.renderer as any).$cursorLayer.element.style.display = "none";
+    (renderCodeEditor.renderer as any).$cursorLayer.element.style.display =
+      "none";
   } catch (e) {
     // Fallback if cursor hiding fails
     console.log("Could not hide cursor:", e);
@@ -585,8 +591,6 @@ function updateCodeDisplay() {
   const currentTraceStep = renderExecutionTrace[renderCurrentStep];
   const currentLine = currentTraceStep?.line || 1;
 
-  console.log(`Step ${renderCurrentStep + 1}: Highlighting line ${currentLine}`, currentTraceStep);
-
   // Get previous and next lines for enhanced visualization
   const prevTraceStep =
     renderCurrentStep > 0 ? renderExecutionTrace[renderCurrentStep - 1] : null;
@@ -610,48 +614,34 @@ function updateCodeDisplay() {
     }
   }
 
-  // Add line markers for execution visualization in order of priority (lowest to highest)
-  
-  // 1. Next line to execute (light green background) - lowest priority
+  // Add line markers for execution visualization
+  // Note: Ace Editor markers use currentLine - 2 indexing for proper positioning
+
+  // 1. Next line to execute (light green background)
   if (nextLine && nextLine !== currentLine && nextLine !== prevLine) {
-    console.log(`Adding next line marker for line ${nextLine}, Ace index: ${nextLine - 1}`);
-    const nextMarker = session.addMarker(
-      new ace.Range(nextLine - 1, 0, nextLine - 1, Number.MAX_VALUE),
+    session.addMarker(
+      new ace.Range(nextLine - 2, 0, nextLine - 2, Number.MAX_VALUE),
       "ace_execution_next",
       "fullLine"
     );
-    console.log(`Added next line marker ${nextMarker} for line ${nextLine}`);
   }
 
-  // 2. Previous line executed (light blue background) - medium priority  
+  // 2. Previous line executed (light blue background)
   if (prevLine && prevLine !== currentLine) {
-    console.log(`Adding previous line marker for line ${prevLine}, Ace index: ${prevLine - 1}`);
-    const prevMarker = session.addMarker(
-      new ace.Range(prevLine - 1, 0, prevLine - 1, Number.MAX_VALUE),
+    session.addMarker(
+      new ace.Range(prevLine - 2, 0, prevLine - 2, Number.MAX_VALUE),
       "ace_execution_previous",
       "fullLine"
     );
-    console.log(`Added previous line marker ${prevMarker} for line ${prevLine}`);
   }
 
-  // 3. Current line being executed (yellow background) - highest priority
+  // 3. Current line being executed (yellow background)
   if (currentLine) {
-    console.log(`Step ${renderCurrentStep + 1}: Highlighting line ${currentLine}, Ace index: ${currentLine - 1}`);
-    console.log(`Ace Range: ${currentLine - 1} to ${currentLine - 1}`);
-    
-    // Debug: Show what's actually on this line in the source code
-    const sourceLines = renderSourceCode.split('\n');
-    console.log(`Source line ${currentLine}: "${sourceLines[currentLine - 1]}"`);
-    console.log(`Source line ${currentLine - 1}: "${sourceLines[currentLine - 2]}"`);
-    console.log(`Source line ${currentLine + 1}: "${sourceLines[currentLine]}"`);
-    
-    const marker = session.addMarker(
-      new ace.Range(currentLine - 1, 0, currentLine - 1, Number.MAX_VALUE),
+    session.addMarker(
+      new ace.Range(currentLine - 2, 0, currentLine - 2, Number.MAX_VALUE),
       "ace_execution_current",
       "fullLine"
     );
-    
-    console.log(`Added current line marker ${marker} for line ${currentLine}`);
 
     // Scroll to current line
     renderCodeEditor.scrollToLine(currentLine - 1, true, true, () => {});
