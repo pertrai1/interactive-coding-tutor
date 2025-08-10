@@ -88,12 +88,17 @@ function transpileCode(code, filename = "user_script.js") {
  * @returns {boolean} - True if transpilation is likely needed
  */
 function needsTranspilation(code) {
-  // Only transpile features that truly need it for Node.js 20+ compatibility
-  // Classes, let/const, arrow functions work natively
+  // Enhanced detection for modern JavaScript features
   const modernFeatures = [
     /\bimport\s+/, // ES6 imports - need transpilation
     /\bexport\s+/, // ES6 exports - need transpilation
-    // Removed class check - classes work natively in Node.js 20+
+    /\.\.\.\w+/, // Spread operator in contexts that need transpilation
+    /async\s+function/, // Async functions - may need transpilation for complex cases
+    /await\s+/, // Await keyword - may need transpilation
+    /class\s+\w+\s+extends/, // Class inheritance - may need enhanced support
+    /\w+\s*\.\s*\w+\s*=\s*\([^)]*\)\s*=>/, // Method definitions with arrow functions
+    /\[.*\.\.\./,  // Array spread in destructuring
+    /\{.*\.\.\./,  // Object spread in destructuring
   ];
 
   return modernFeatures.some((pattern) => pattern.test(code));
