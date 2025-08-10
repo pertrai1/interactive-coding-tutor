@@ -1,32 +1,46 @@
 /**
  * Babel Configuration Module for Interactive Coding Tutor
- * 
+ *
  * This module provides a centralized configuration for Babel transpilation
  * to convert modern ES6+ JavaScript syntax to ES5-compatible code while
  * preserving line numbers for educational step-by-step visualization.
  */
 
-const babel = require('@babel/core');
+// Lazy-load babel to avoid requiring it when not needed
+let babel = null;
+function getBabel() {
+  if (!babel) {
+    babel = require("@babel/core");
+  }
+  return babel;
+}
 
 /**
  * Babel configuration for ES5 target compatibility
- * 
+ *
  * Note: This configuration prioritizes line number preservation for educational
  * step-by-step visualization. The 'retainLines' option helps maintain accurate
  * line numbers in transpiled code, which is crucial for showing execution flow.
  */
 const babelConfig = {
   presets: [
-    ['@babel/preset-env', {
-      targets: {
-        // Target ES5 for maximum compatibility
-        ie: '9'
+    [
+      "@babel/preset-env",
+      {
+        targets: {
+          // Target Node.js 18+ for better modern JS support
+          node: "18",
+        },
+        // Keep modules as-is for Node.js compatibility
+        modules: "commonjs",
+        // Preserve modern features that Node.js already supports
+        exclude: [
+          "transform-arrow-functions",
+          "transform-block-scoping",
+          "transform-classes",
+        ],
       },
-      // Preserve modules to avoid complex transformations
-      modules: false,
-      // Don't transform arrow functions if not needed for compatibility
-      exclude: []
-    }]
+    ],
   ],
   // Generate source maps for line number preservation
   sourceMaps: true,
@@ -35,7 +49,7 @@ const babelConfig = {
   // Compact output for cleaner execution
   compact: false,
   // Preserve line numbers as much as possible
-  retainLines: true
+  retainLines: true,
 };
 
 /**
@@ -44,18 +58,19 @@ const babelConfig = {
  * @param {string} filename - The filename for error reporting (optional)
  * @returns {Object} - Object containing transpiled code, source map, and error handling
  */
-function transpileCode(code, filename = 'user_script.js') {
+function transpileCode(code, filename = "user_script.js") {
   try {
+    const babel = getBabel(); // Lazy-load babel
     const result = babel.transformSync(code, {
       ...babelConfig,
-      filename: filename
+      filename: filename,
     });
 
     return {
       success: true,
       code: result.code,
       map: result.map,
-      error: null
+      error: null,
     };
   } catch (error) {
     return {
@@ -65,8 +80,8 @@ function transpileCode(code, filename = 'user_script.js') {
       error: {
         message: error.message,
         line: error.loc ? error.loc.line : null,
-        column: error.loc ? error.loc.column : null
-      }
+        column: error.loc ? error.loc.column : null,
+      },
     };
   }
 }
@@ -77,24 +92,19 @@ function transpileCode(code, filename = 'user_script.js') {
  * @returns {boolean} - True if transpilation is likely needed
  */
 function needsTranspilation(code) {
-  // Simple heuristic check for modern features
+  // Very conservative check - only transpile if we really need to
+  // Node.js 18+ supports most modern features natively
   const modernFeatures = [
-    /\bclass\s+\w+/,           // Class declarations
-    /=>/,                      // Arrow functions
-    /`[^`]*\$\{[^}]*\}[^`]*`/, // Template literals with interpolation
-    /\bimport\s+/,             // ES6 imports
-    /\bexport\s+/,             // ES6 exports
-    /\basync\s+/,              // Async functions
-    /\bawait\s+/,              // Await expressions
-    /\.\.\./,                  // Spread/rest operators
-    /\b(?:let|const)\s+/,      // Let/const declarations (though Node.js supports these)
+    /\bimport\s+/, // ES6 imports
+    /\bexport\s+/, // ES6 exports
+    // Note: Removed arrow functions, async/await, let/const, classes as Node.js 18+ supports them
   ];
 
-  return modernFeatures.some(pattern => pattern.test(code));
+  return modernFeatures.some((pattern) => pattern.test(code));
 }
 
 module.exports = {
   transpileCode,
   needsTranspilation,
-  babelConfig
+  babelConfig,
 };

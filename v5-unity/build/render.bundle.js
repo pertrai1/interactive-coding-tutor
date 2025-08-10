@@ -39,6 +39,10 @@ function initializeVisualization(code, trace, consoleOutput) {
   renderTotalSteps = trace.length;
   console.log("Trace data:", trace);
   console.log("Total steps:", renderTotalSteps);
+  console.log("First few steps:");
+  trace.slice(0, 5).forEach((step, index) => {
+    console.log(`  Step ${index + 1}: Line ${step.line}, Event: ${step.event}`);
+  });
   createVisualizationUI();
   updateVisualization();
 }
@@ -135,19 +139,26 @@ function createVisualizationUI() {
     }
 
     /* Execution line highlighting styles */
-    .ace_current_line {
-      background: #ffff99 !important;
-      border: 2px solid #3D58A2 !important;
+    .ace_execution_current {
+      background: #ffff00 !important;
+      border: 3px solid #ff0000 !important;
+      position: relative !important;
+      z-index: 1000 !important;
+      opacity: 1 !important;
     }
 
-    .ace_previous_line {
+    .ace_execution_previous {
       background: #e6f3ff !important;
       border-left: 3px solid #66b3ff !important;
+      position: relative !important;
+      z-index: 500 !important;
     }
 
-    .ace_next_line {
+    .ace_execution_next {
       background: #f0f8e6 !important;
       border-left: 3px solid #90ee90 !important;
+      position: relative !important;
+      z-index: 250 !important;
     }
 
     .execution-status {
@@ -327,8 +338,8 @@ function createVisualizationUI() {
   document.head.appendChild(style);
   container.innerHTML = `
     <div style="text-align: center; margin-bottom: 15px;">
-      <button class="back-btn" onclick="window.location.href='visualize.html#mode=edit'">
-        ⬅️ Back to Editor
+      <button class="back-btn" id="editCodeBtn">
+        ✏️ Edit Current Code
       </button>
     </div>
 
@@ -410,6 +421,11 @@ function initializeRenderCodeEditor() {
     wrap: false
   });
   renderCodeEditor.setHighlightActiveLine(false);
+  try {
+    renderCodeEditor.renderer.$cursorLayer.element.style.display = "none";
+  } catch (e) {
+    console.log("Could not hide cursor:", e);
+  }
   renderCodeEditor.setValue(renderSourceCode, -1);
   renderCodeEditor.clearSelection();
 }
@@ -418,6 +434,7 @@ function setupEventListeners() {
   const stepBackBtn = document.getElementById("jmpStepBack");
   const stepFwdBtn = document.getElementById("jmpStepFwd");
   const lastBtn = document.getElementById("jmpLastInstr");
+  const editCodeBtn = document.getElementById("editCodeBtn");
   if (firstBtn) {
     firstBtn.addEventListener("click", () => {
       renderCurrentStep = 0;
@@ -444,6 +461,12 @@ function setupEventListeners() {
     lastBtn.addEventListener("click", () => {
       renderCurrentStep = renderTotalSteps - 1;
       updateVisualization();
+    });
+  }
+  if (editCodeBtn) {
+    editCodeBtn.addEventListener("click", () => {
+      const encodedCode = encodeURIComponent(renderSourceCode);
+      window.location.href = `visualize.html#mode=edit&code=${encodedCode}`;
     });
   }
   document.addEventListener("keydown", (e) => {
@@ -492,6 +515,7 @@ function updateCodeDisplay() {
   if (!renderCodeEditor) return;
   const currentTraceStep = renderExecutionTrace[renderCurrentStep];
   const currentLine = currentTraceStep?.line || 1;
+  console.log(`Step ${renderCurrentStep + 1}: Highlighting line ${currentLine}`, currentTraceStep);
   const prevTraceStep = renderCurrentStep > 0 ? renderExecutionTrace[renderCurrentStep - 1] : null;
   const nextTraceStep = renderCurrentStep < renderTotalSteps - 1 ? renderExecutionTrace[renderCurrentStep + 1] : null;
   const prevLine = prevTraceStep?.line;
@@ -504,32 +528,43 @@ function updateCodeDisplay() {
       session.removeMarker(parseInt(markerId));
     }
   }
-  if (prevLine && prevLine !== currentLine) {
-    session.addMarker(
-      new ace.Range(prevLine - 1, 0, prevLine - 1, Number.MAX_VALUE),
-      "ace_previous_line",
+  if (nextLine && nextLine !== currentLine && nextLine !== prevLine) {
+    console.log(`Adding next line marker for line ${nextLine}, Ace index: ${nextLine - 1}`);
+    const nextMarker = session.addMarker(
+      new ace.Range(nextLine - 1, 0, nextLine - 1, Number.MAX_VALUE),
+      "ace_execution_next",
       "fullLine"
     );
+    console.log(`Added next line marker ${nextMarker} for line ${nextLine}`);
+  }
+  if (prevLine && prevLine !== currentLine) {
+    console.log(`Adding previous line marker for line ${prevLine}, Ace index: ${prevLine - 1}`);
+    const prevMarker = session.addMarker(
+      new ace.Range(prevLine - 1, 0, prevLine - 1, Number.MAX_VALUE),
+      "ace_execution_previous",
+      "fullLine"
+    );
+    console.log(`Added previous line marker ${prevMarker} for line ${prevLine}`);
   }
   {
-    session.addMarker(
+    console.log(`Step ${renderCurrentStep + 1}: Highlighting line ${currentLine}, Ace index: ${currentLine - 1}`);
+    console.log(`Ace Range: ${currentLine - 1} to ${currentLine - 1}`);
+    const sourceLines = renderSourceCode.split("\n");
+    console.log(`Source line ${currentLine}: "${sourceLines[currentLine - 1]}"`);
+    console.log(`Source line ${currentLine - 1}: "${sourceLines[currentLine - 2]}"`);
+    console.log(`Source line ${currentLine + 1}: "${sourceLines[currentLine]}"`);
+    const marker = session.addMarker(
       new ace.Range(currentLine - 1, 0, currentLine - 1, Number.MAX_VALUE),
-      "ace_current_line",
+      "ace_execution_current",
       "fullLine"
     );
+    console.log(`Added current line marker ${marker} for line ${currentLine}`);
     renderCodeEditor.scrollToLine(currentLine - 1, true, true, () => {
     });
     const lineInfo = document.getElementById("lineInfo");
     if (lineInfo) {
       lineInfo.textContent = `Line ${currentLine}`;
     }
-  }
-  if (nextLine && nextLine !== currentLine && nextLine !== prevLine) {
-    session.addMarker(
-      new ace.Range(nextLine - 1, 0, nextLine - 1, Number.MAX_VALUE),
-      "ace_next_line",
-      "fullLine"
-    );
   }
   const executionStatus = document.getElementById("executionStatus");
   if (executionStatus) {
@@ -733,15 +768,29 @@ function escapeHtml(text) {
 function showError(message) {
   const container = document.getElementById("visualizerContainer");
   if (!container) return;
+  const urlParams = new URLSearchParams(window.location.hash.substring(1));
+  const code = urlParams.get("code");
   container.innerHTML = `
     <div class="error-container">
       <h2>❌ Error</h2>
       <p>${escapeHtml(message)}</p>
-      <button class="back-btn" onclick="window.location.href='visualize.html#mode=edit'">
+      <button class="back-btn" id="errorBackBtn">
         ⬅️ Back to Editor
       </button>
     </div>
   `;
+  const errorBackBtn = document.getElementById("errorBackBtn");
+  if (errorBackBtn && code) {
+    errorBackBtn.addEventListener("click", () => {
+      window.location.href = `visualize.html#mode=edit&code=${encodeURIComponent(
+        code
+      )}`;
+    });
+  } else if (errorBackBtn) {
+    errorBackBtn.addEventListener("click", () => {
+      window.location.href = "visualize.html#mode=edit";
+    });
+  }
 }
 window.modernRenderApp = {
   initializeVisualization,

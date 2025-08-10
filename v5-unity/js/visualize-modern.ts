@@ -331,9 +331,9 @@ const numbers = [1, 2, 3, 4, 5];
 const doubled = numbers.map(n => n * 2);
 console.log('Doubled:', doubled);
 
-// Arrow functions and destructuring
-const { length } = numbers;
-console.log('Array length:', length);
+// Arrow functions and safe destructuring
+const arrayLength = numbers.length;
+console.log('Array length:', arrayLength);
 
 // Modern async/await
 async function fetchData() {
@@ -345,7 +345,21 @@ async function fetchData() {
 // Uncomment to test async code:
 // fetchData().then(data => console.log(data));`;
 
-  codeEditor.setValue(defaultCode, -1);
+  // Check URL parameters for existing code
+  const urlParams = new URLSearchParams(window.location.hash.substring(1));
+  const codeFromUrl = urlParams.get("code");
+
+  if (codeFromUrl) {
+    try {
+      const decodedCode = decodeURIComponent(codeFromUrl);
+      codeEditor.setValue(decodedCode, -1);
+    } catch (error) {
+      console.error("Error decoding code from URL:", error);
+      codeEditor.setValue(defaultCode, -1);
+    }
+  } else {
+    codeEditor.setValue(defaultCode, -1);
+  }
   codeEditor.clearSelection();
 
   // Add language selector handler
