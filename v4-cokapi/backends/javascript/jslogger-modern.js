@@ -316,6 +316,14 @@ function wrapCodeForVariableTracking(code) {
           shouldSkip = true;
         }
         
+        // Skip if line contains method call followed by comment and we're expecting continuation
+        if (line.match(/\)\s*\/\/.*$/) && i + 1 < lines.length) {
+          var nextLine = lines[i + 1].trim();
+          if (nextLine.match(/^\s*\./)) {
+            shouldSkip = true;
+          }
+        }
+        
         if (!shouldSkip) {
           wrappedLines.push(`(function() { __tracer.call(this, ${originalLineNumber}); }).call(this);`);
         }
