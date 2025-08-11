@@ -197,7 +197,7 @@ function exec_js_handler(
     "all",
     "pgbovine/cokapi-js:v2",
     "node", // Use modern Node.js from container
-    "/tmp/javascript/jslogger-modern.js"
+    "/tmp/javascript/jslogger-stackaware.js"
   );
 
   if (isTypescript) {

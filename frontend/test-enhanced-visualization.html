@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Enhanced Frames & Objects Test</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+      }
+      .test-section {
+        margin: 20px 0;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+      }
+      .test-code {
+        background: #f5f5f5;
+        padding: 10px;
+        border-radius: 3px;
+        font-family: monospace;
+      }
+      .test-link {
+        display: inline-block;
+        margin: 10px 0;
+        padding: 8px 16px;
+        background: #007bff;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+      }
+      .test-link:hover {
+        background: #0056b3;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🧪 Enhanced Frames & Objects Test Cases</h1>
+      <p>
+        Test the enhanced visualization with these examples that should work
+        with our current backend:
+      </p>
+
+      <div class="test-section">
+        <h3>✅ Test 1: Simple Variables (Should work)</h3>
+        <div class="test-code">
+          var x = 5;<br />var y = 10;<br />var z = x + y;
+        </div>
+        <a
+          href="../visualize.html#mode=edit&code=var%20x%20%3D%205%3B%0Avar%20y%20%3D%2010%3B%0Avar%20z%20%3D%20x%20%2B%20y%3B"
+          class="test-link"
+          >Test Simple Variables</a
+        >
+      </div>
+
+      <div class="test-section">
+        <h3>✅ Test 2: Function Calls (Should show stack frames)</h3>
+        <div class="test-code">
+          function add(a, b) {<br />&nbsp;&nbsp;return a + b;<br />}<br />var
+          result = add(3, 4);
+        </div>
+        <a
+          href="../visualize.html#mode=edit&code=function%20add(a%2C%20b)%20%7B%0A%20%20return%20a%20%2B%20b%3B%0A%7D%0Avar%20result%20%3D%20add(3%2C%204)%3B"
+          class="test-link"
+          >Test Function Calls</a
+        >
+      </div>
+
+      <div class="test-section">
+        <h3>🔄 Test 3: Complex Objects (Will be transformed)</h3>
+        <div class="test-code">
+          var obj = {a: 1, b: 2};<br />var arr = [1, 2, 3];<br />var nested =
+          {x: obj, y: arr};
+        </div>
+        <a
+          href="../visualize.html#mode=edit&code=var%20obj%20%3D%20%7Ba%3A%201%2C%20b%3A%202%7D%3B%0Avar%20arr%20%3D%20%5B1%2C%202%2C%203%5D%3B%0Avar%20nested%20%3D%20%7Bx%3A%20obj%2C%20y%3A%20arr%7D%3B"
+          class="test-link"
+          >Test Complex Objects</a
+        >
+      </div>
+
+      <div class="test-section">
+        <h3>🎯 Test 4: The Original deepOmit Example</h3>
+        <div class="test-code">
+          function deepOmit(obj, keys) {<br />&nbsp;&nbsp;//
+          Implementation...<br />}<br />const obj = {a: 1, b: 2, c: {d: 3}};<br />deepOmit(obj,
+          ['b']);
+        </div>
+        <a
+          href="../visualize.html#mode=edit&code=function%20deepOmit(obj%2C%20keys)%20%7B%0A%20%20if%20(typeof%20obj%20!%3D%3D%20'object'%20%7C%7C%20obj%20%3D%3D%3D%20null)%20%7B%0A%20%20%20%20return%20obj%3B%0A%20%20%7D%0A%20%20if%20(Array.isArray(obj))%20%7B%0A%20%20%20%20return%20obj.map((val)%20%3D%3E%20deepOmit(val%2C%20keys))%3B%0A%20%20%7D%0A%20%20const%20newObj%20%3D%20%7B%7D%3B%0A%20%20for%20(const%20key%20in%20obj)%20%7B%0A%20%20%20%20if%20(!keys.includes(key))%20%7B%0A%20%20%20%20%20%20newObj%5Bkey%5D%20%3D%20deepOmit(obj%5Bkey%5D%2C%20keys)%3B%0A%20%20%20%20%7D%0A%20%20%7D%0A%20%20return%20newObj%3B%0A%7D%0A%0Aconst%20obj%20%3D%20%7Ba%3A%201%2C%20b%3A%202%2C%20c%3A%20%7Bd%3A%203%2C%20e%3A%204%7D%7D%3B%0AdeepOmit(obj%2C%20%5B'b'%2C%20'c'%5D)%3B"
+          class="test-link"
+          >Test deepOmit Function</a
+        >
+      </div>
+
+      <div class="test-section">
+        <h3>📋 What to Look For:</h3>
+        <ul>
+          <li>
+            <strong>Global Variables:</strong> Should appear in the left
+            "Frames" panel
+          </li>
+          <li>
+            <strong>Local Variables:</strong> Should appear in stack frames when
+            functions are called
+          </li>
+          <li>
+            <strong>Heap Objects:</strong> Complex objects should appear in the
+            right "Objects" panel
+          </li>
+          <li>
+            <strong>Object References:</strong> Variables pointing to objects
+            should show "→ id#" links
+          </li>
+          <li>
+            <strong>Execution Status:</strong> Should show current line and
+            operation being performed
+          </li>
+          <li>
+            <strong>Stack Frames:</strong> Function calls should create new
+            frames with local variables
+          </li>
+        </ul>
+      </div>
+
+      <div class="test-section">
+        <h3>🔧 Implementation Notes:</h3>
+        <p>Our enhanced visualization now includes:</p>
+        <ul>
+          <li>
+            ✅ Data transformation layer to convert simple traces to Python
+            Tutor format
+          </li>
+          <li>
+            ✅ Enhanced stack frame rendering with proper function names and
+            frame IDs
+          </li>
+          <li>✅ Heap object rendering with type information and structure</li>
+          <li>
+            ✅ Object reference linking between variables and heap objects
+          </li>
+          <li>✅ Execution status tracking with detailed event information</li>
+          <li>🔄 D3.js and jsPlumb integration (same tools as Python Tutor)</li>
+        </ul>
+      </div>
+    </div>
+  </body>
+</html>

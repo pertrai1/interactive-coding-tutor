@@ -1,3 +1,4 @@
+var commonjsGlobal = typeof globalThis !== "undefined" ? globalThis : typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : {};
 function getDefaultExportFromCjs(x) {
   return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, "default") ? x["default"] : x;
 }
@@ -5,10 +6,10 @@ var ace$2 = { exports: {} };
 (function(module, exports) {
   (function() {
     var ACE_NAMESPACE = "ace";
-    var global = /* @__PURE__ */ function() {
+    var global2 = /* @__PURE__ */ function() {
       return this;
     }();
-    if (!global && typeof window != "undefined") global = window;
+    if (!global2 && typeof window != "undefined") global2 = window;
     var define = function(module2, deps, payload) {
       if (typeof module2 !== "string") {
         if (define.original)
@@ -93,11 +94,11 @@ var ace$2 = { exports: {} };
       return module2;
     };
     function exportAce(ns) {
-      var root = global;
+      var root = global2;
       {
-        if (!global[ns])
-          global[ns] = {};
-        root = global[ns];
+        if (!global2[ns])
+          global2[ns] = {};
+        root = global2[ns];
       }
       if (!root.define || !root.define.packaged) {
         define.original = root.define;
@@ -1225,7 +1226,7 @@ var ace$2 = { exports: {} };
         cb(null, module3);
       });
     });
-    var global = /* @__PURE__ */ function() {
+    var global2 = /* @__PURE__ */ function() {
       return this || typeof window != "undefined" && window;
     }();
     module2.exports = function(ace2) {
@@ -1235,9 +1236,9 @@ var ace$2 = { exports: {} };
     };
     init(true);
     function init(packaged) {
-      if (!global || !global.document)
+      if (!global2 || !global2.document)
         return;
-      config.set("packaged", packaged || require2.packaged || module2.packaged || global.define && (void 0).packaged);
+      config.set("packaged", packaged || require2.packaged || module2.packaged || global2.define && (void 0).packaged);
       var scriptOptions = {};
       var scriptUrl = "";
       var currentScript = document.currentScript || document._currentScript;
@@ -22546,18 +22547,18 @@ var ace$2 = { exports: {} };
         a.config.init(true);
         a.define = ace.define;
       }
-      var global = /* @__PURE__ */ function() {
+      var global2 = /* @__PURE__ */ function() {
         return this;
       }();
-      if (!global && typeof window != "undefined") global = window;
-      if (!global && typeof self != "undefined") global = self;
-      if (!global.ace)
-        global.ace = a;
+      if (!global2 && typeof window != "undefined") global2 = window;
+      if (!global2 && typeof self != "undefined") global2 = self;
+      if (!global2.ace)
+        global2.ace = a;
       for (var key in a) if (a.hasOwnProperty(key))
-        global.ace[key] = a[key];
-      global.ace["default"] = global.ace;
+        global2.ace[key] = a[key];
+      global2.ace["default"] = global2.ace;
       if (module) {
-        module.exports = global.ace;
+        module.exports = global2.ace;
       }
     });
   })();
@@ -25341,5 +25342,7 @@ var themeTextmate = { exports: {} };
   })();
 })(themeTextmate);
 export {
-  ace$1 as a
+  ace$1 as a,
+  commonjsGlobal as c,
+  getDefaultExportFromCjs as g
 };

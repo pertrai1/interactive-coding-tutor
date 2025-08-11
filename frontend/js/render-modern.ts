@@ -1,11 +1,21 @@
 // Modern TypeScript entry point for Interactive Coding Tutor - Render Mode
 // Python Tutor-style visualization display with Ace Editor code display
+// Uses D3.js and jsPlumb like the original Python Tutor for maximum compatibility
 
 import ace from "ace-builds";
 import "ace-builds/src-noconflict/mode-javascript";
 import "ace-builds/src-noconflict/mode-typescript";
 import "ace-builds/src-noconflict/theme-github";
 import "ace-builds/src-noconflict/theme-textmate";
+
+// Modern ES module imports instead of require()
+import * as d3 from "d3";
+import $ from "jquery";
+import { jsPlumb } from "jsplumb";
+
+// Make jQuery globally available (for compatibility)
+(window as any).$ = $;
+(window as any).jQuery = $;
 
 console.log("🎬 Interactive Coding Tutor - Render Mode Loaded!");
 
@@ -16,6 +26,10 @@ let renderExecutionTrace: any[] = [];
 let renderSourceCode = "";
 let renderConsoleOutputText = "";
 let renderCodeEditor: ace.Ace.Editor;
+
+// D3 and jsPlumb instances (matching Python Tutor architecture)
+let domRootD3: any;
+let jsPlumbInstance: any;
 
 document.addEventListener("DOMContentLoaded", () => {
   console.log("✅ DOM loaded, initializing render mode...");
@@ -53,26 +67,198 @@ function initializeVisualization(
   consoleOutput: string
 ) {
   renderSourceCode = code;
-  renderExecutionTrace = trace;
   renderConsoleOutputText = consoleOutput;
-  renderCurrentStep = 0;
-  renderTotalSteps = trace.length;
 
-  console.log("Trace data:", trace);
+  // Transform our simple trace format to Python Tutor format
+  renderExecutionTrace = transformTraceTopythonTutorFormat(trace);
+  renderCurrentStep = 0;
+  renderTotalSteps = renderExecutionTrace.length;
+
+  console.log("Original trace:", trace);
+  console.log("Transformed trace:", renderExecutionTrace);
   console.log("Total steps:", renderTotalSteps);
-  console.log("First few steps:");
-  trace.slice(0, 5).forEach((step, index) => {
-    console.log(`  Step ${index + 1}: Line ${step.line}, Event: ${step.event}`);
-    console.log(`    Globals:`, step.globals);
-    console.log(`    Stack frames:`, step.stack_to_render);
-    console.log(`    Heap objects:`, step.heap);
-    if (step.stdout) {
-      console.log(`    Console output:`, step.stdout);
-    }
-  });
 
   createVisualizationUI();
   updateVisualization();
+}
+
+// Transform our simple trace format to match Python Tutor's expected format
+function transformTraceTopythonTutorFormat(trace: any[]): any[] {
+  const transformedTrace: any[] = [];
+  let heapObjectCounter = 1;
+  const globalObjectMap = new Map(); // Track object instances globally across all steps
+  let cumulativeHeap: any = {}; // Build up heap cumulatively across steps
+
+  trace.forEach((step, stepIndex) => {
+    console.log(`Step ${stepIndex}:`, step);
+    console.log(`Step ${stepIndex} globals:`, step.globals);
+    console.log(`Step ${stepIndex} ordered_globals:`, step.ordered_globals);
+    console.log(`Step ${stepIndex} stack_to_render:`, step.stack_to_render);
+    console.log(`Step ${stepIndex} heap:`, step.heap);
+
+    // Check if this step already has Python Tutor format
+    if (step.heap !== undefined && typeof step.heap === "object") {
+      // Already in Python Tutor format, just ensure cumulative heap
+      Object.assign(cumulativeHeap, step.heap);
+      step.heap = { ...cumulativeHeap };
+      transformedTrace.push(step);
+      return;
+    }
+
+    const heap: any = { ...cumulativeHeap }; // Start with existing heap
+    const transformedGlobals: any = {};
+    const orderedGlobals: string[] = [];
+
+    // Process globals and create heap objects for complex types
+    if (step.globals) {
+      for (const [name, value] of Object.entries(step.globals)) {
+        if (typeof value === "function") {
+          // Handle functions - they should appear in the heap like Python Tutor
+          const objectId = heapObjectCounter++;
+          const funcKey = `func_${name}_${value.toString().substring(0, 50)}`;
+
+          if (!globalObjectMap.has(funcKey)) {
+            globalObjectMap.set(funcKey, objectId);
+
+            // Create FUNCTION heap object (similar to Python Tutor)
+            heap[objectId] = [
+              "FUNCTION",
+              {
+                name: name,
+                __name__: name,
+                __code__: value.toString(),
+              },
+            ];
+          }
+
+          // Reference the heap object
+          transformedGlobals[name] = ["REF", globalObjectMap.get(funcKey)];
+        } else if (typeof value === "object" && value !== null) {
+          // Create heap object
+          const objectId = heapObjectCounter++;
+          const objKey = JSON.stringify(value);
+
+          if (!globalObjectMap.has(objKey)) {
+            globalObjectMap.set(objKey, objectId);
+
+            if (Array.isArray(value)) {
+              // Create LIST heap object
+              heap[objectId] = ["LIST", ...value];
+            } else {
+              // Create DICT heap object
+              heap[objectId] = ["DICT", value];
+            }
+          }
+
+          // Reference the heap object
+          transformedGlobals[name] = ["REF", globalObjectMap.get(objKey)];
+        } else {
+          // Primitive value
+          transformedGlobals[name] = value;
+        }
+        orderedGlobals.push(name);
+      }
+    }
+
+    // Create stack frames if we have function calls
+    const stackToRender: any[] = [];
+    if (step.stack_to_render && step.stack_to_render.length > 0) {
+      step.stack_to_render.forEach((frame: any, frameIndex: number) => {
+        const encodedLocals: any = {};
+        const orderedVarnames: string[] = [];
+
+        // Transform local variables
+        if (frame.locals || frame.ordered_varnames) {
+          const locals = frame.locals || {};
+          const varnames = frame.ordered_varnames || Object.keys(locals);
+
+          varnames.forEach((varName: string) => {
+            const value = locals[varName];
+            if (typeof value === "object" && value !== null) {
+              // Create heap object for local variable
+              const objectId = heapObjectCounter++;
+              const objKey = JSON.stringify(value);
+
+              if (!globalObjectMap.has(objKey)) {
+                globalObjectMap.set(objKey, objectId);
+
+                if (Array.isArray(value)) {
+                  heap[objectId] = ["LIST", ...value];
+                } else {
+                  heap[objectId] = ["DICT", value];
+                }
+              }
+
+              encodedLocals[varName] = ["REF", globalObjectMap.get(objKey)];
+            } else {
+              encodedLocals[varName] = value;
+            }
+            orderedVarnames.push(varName);
+          });
+        }
+
+        stackToRender.push({
+          frame_id: frame.frame_id || frameIndex + 1,
+          encoded_locals: encodedLocals,
+          is_highlighted: frameIndex === step.stack_to_render.length - 1, // Highlight top frame
+          is_parent: false,
+          func_name: frame.func_name || "function",
+          is_zombie: false,
+          parent_frame_id_list: frame.parent_frame_id_list || [],
+          unique_hash: frame.unique_hash || `frame_${frameIndex}`,
+          ordered_varnames: orderedVarnames,
+        });
+      });
+    }
+
+    // Create transformed step
+    const transformedStep = {
+      line: step.line || 1,
+      event: step.event || "step_line",
+      func_name: step.func_name || "<module>",
+      globals: transformedGlobals,
+      ordered_globals:
+        step.ordered_globals && step.ordered_globals.length > 0
+          ? step.ordered_globals
+          : orderedGlobals,
+      stack_to_render: stackToRender,
+      heap: heap,
+      stdout: step.stdout || "",
+    };
+
+    // Add exception info if present
+    if (step.exception_msg) {
+      transformedStep.event = "exception";
+      (transformedStep as any).exception_msg = step.exception_msg;
+    }
+
+    transformedTrace.push(transformedStep);
+
+    // Update cumulative heap for next step
+    cumulativeHeap = { ...heap };
+  });
+
+  return transformedTrace;
+}
+
+// Initialize D3.js and jsPlumb for visualization
+function initializeD3AndJsPlumb() {
+  // Initialize D3 root selection (modern D3 doesn't need this, but for compatibility)
+  domRootD3 = d3.select("#dataViz");
+
+  // Initialize jsPlumb instance for connecting elements
+  jsPlumbInstance = jsPlumb.getInstance({
+    Container: "dataViz",
+    Connector: ["Flowchart", { stub: [10, 10], gap: 10 }],
+    ConnectionOverlays: [["Arrow", { length: 10, width: 8, location: 1 }]],
+    PaintStyle: { stroke: "#666", strokeWidth: 2 },
+    HoverPaintStyle: { stroke: "#333", strokeWidth: 3 },
+    Endpoint: ["Dot", { radius: 3 }],
+    EndpointStyle: { fill: "#666" },
+    EndpointHoverStyle: { fill: "#333" },
+  });
+
+  console.log("✅ D3.js and jsPlumb initialized for visualization");
 }
 
 function createVisualizationUI() {
@@ -194,10 +380,23 @@ function createVisualizationUI() {
     .execution-status {
       background: #f0f8ff;
       border: 1px solid #b6d7ff;
-      padding: 5px 10px;
+      padding: 8px 12px;
       margin-bottom: 10px;
-      font-size: 9pt;
-      border-radius: 3px;
+      font-size: 10pt;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+
+    .execution-status.error {
+      background: #ffebee;
+      border: 1px solid #ffcdd2;
+      color: #c62828;
+    }
+
+    .execution-status.completed {
+      background: #e8f5e8;
+      border: 1px solid #c8e6c9;
+      color: #2e7d32;
     }
 
     /* Stack and Heap Layout */
@@ -266,6 +465,9 @@ function createVisualizationUI() {
     /* Heap Objects */
     .heapRow {
       margin-bottom: 15px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
     }
 
     .heapObject {
@@ -274,6 +476,16 @@ function createVisualizationUI() {
       display: inline-block;
       margin-right: 10px;
       margin-bottom: 10px;
+      transition: all 0.2s ease;
+    }
+
+    .heapObject:hover {
+      border-color: #3D58A2;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .toplevelHeapObject {
+      vertical-align: top;
     }
 
     .heapObjectHeader {
@@ -282,10 +494,12 @@ function createVisualizationUI() {
       padding: 2px 5px;
       font-size: 8pt;
       color: #666666;
+      text-align: center;
     }
 
     .heapObjectTable {
       border-collapse: collapse;
+      min-width: 120px;
     }
 
     .heapObjectTable td {
@@ -293,6 +507,17 @@ function createVisualizationUI() {
       padding: 2px 4px;
       vertical-align: top;
       font-size: 9pt;
+    }
+
+    .objectRef {
+      cursor: pointer;
+      text-decoration: underline;
+      color: #3D58A2 !important;
+    }
+
+    .objectRef:hover {
+      background-color: #e6f3ff;
+      text-decoration: none;
     }
 
     /* Console Output */
@@ -426,6 +651,9 @@ function createVisualizationUI() {
     </table>
   `;
 
+  // Initialize D3 and jsPlumb for Python Tutor compatibility
+  initializeD3AndJsPlumb();
+
   // Add event listeners
   setupEventListeners();
 
@@ -532,21 +760,47 @@ function setupEventListeners() {
 
   // Keyboard navigation
   document.addEventListener("keydown", (e) => {
-    if (e.key === "ArrowLeft" && renderCurrentStep > 0) {
+    // Allow keyboard navigation when not focused on input elements
+    if (
+      e.target instanceof HTMLInputElement ||
+      e.target instanceof HTMLTextAreaElement
+    ) {
+      return;
+    }
+
+    let handled = false;
+
+    if ((e.key === "ArrowLeft" || e.key === "h") && renderCurrentStep > 0) {
       renderCurrentStep--;
       updateVisualization();
+      handled = true;
     } else if (
-      e.key === "ArrowRight" &&
+      (e.key === "ArrowRight" || e.key === "l") &&
       renderCurrentStep < renderTotalSteps - 1
     ) {
       renderCurrentStep++;
       updateVisualization();
-    } else if (e.key === "Home") {
+      handled = true;
+    } else if (e.key === "Home" || e.key === "g") {
       renderCurrentStep = 0;
       updateVisualization();
-    } else if (e.key === "End") {
+      handled = true;
+    } else if (e.key === "End" || e.key === "G") {
       renderCurrentStep = renderTotalSteps - 1;
       updateVisualization();
+      handled = true;
+    } else if (e.key === " " || e.key === "Enter") {
+      // Space or Enter to step forward
+      if (renderCurrentStep < renderTotalSteps - 1) {
+        renderCurrentStep++;
+        updateVisualization();
+        handled = true;
+      }
+    }
+
+    if (handled) {
+      e.preventDefault();
+      e.stopPropagation();
     }
   });
 }
@@ -569,6 +823,7 @@ function createGlobalFrame() {
 
 function updateVisualization() {
   updateStepInfo();
+  updateExecutionStatus();
   updateCodeDisplay();
   updateStackFrames();
   updateHeapObjects();
@@ -583,6 +838,61 @@ function updateStepInfo() {
       renderCurrentStep + 1
     } of ${renderTotalSteps}`;
   }
+}
+
+function updateExecutionStatus() {
+  const executionStatus = document.getElementById("executionStatus");
+  if (!executionStatus) return;
+
+  const currentTraceStep = renderExecutionTrace[renderCurrentStep];
+  const isLastStep = renderCurrentStep === renderTotalSteps - 1;
+
+  let statusMessage = "";
+  let statusClass = "";
+
+  if (!currentTraceStep) {
+    statusMessage = "No execution data available";
+    statusClass = "error";
+  } else if (isLastStep) {
+    if (currentTraceStep.event === "exception") {
+      statusMessage = `⚠️ Exception occurred: ${
+        currentTraceStep.exception_msg || "Unknown error"
+      }`;
+      statusClass = "error";
+    } else {
+      statusMessage = "✅ Program execution completed successfully";
+      statusClass = "completed";
+    }
+  } else {
+    const eventType = currentTraceStep.event;
+    const line = currentTraceStep.line;
+    const functionName = currentTraceStep.func_name;
+
+    switch (eventType) {
+      case "step_line":
+        statusMessage = `📍 Executing line ${line}`;
+        break;
+      case "call":
+        statusMessage = `📞 Calling function: ${functionName || "anonymous"}`;
+        break;
+      case "return":
+        statusMessage = `↩️ Returning from function: ${
+          functionName || "anonymous"
+        }`;
+        break;
+      case "exception":
+        statusMessage = `⚠️ Exception: ${
+          currentTraceStep.exception_msg || "Unknown error"
+        }`;
+        statusClass = "error";
+        break;
+      default:
+        statusMessage = `⚡ ${eventType} at line ${line}`;
+    }
+  }
+
+  executionStatus.innerHTML = statusMessage;
+  executionStatus.className = `execution-status ${statusClass}`;
 }
 
 function updateCodeDisplay() {
@@ -690,20 +1000,52 @@ function updateStackFrames() {
 
   if (!stackDiv || !globalTable) return;
 
-  // Clear existing stack frames (except globals)
-  stackDiv.innerHTML = "";
-
   const currentTraceStep = renderExecutionTrace[renderCurrentStep];
+  console.log(
+    `Step ${renderCurrentStep} - updateStackFrames:`,
+    currentTraceStep
+  );
 
-  // Update global variables
+  // Update global variables first
   updateGlobalVariables(globalTable, currentTraceStep);
 
+  // Highlight global frame if it has variables or if we're at global scope
+  const globalFrame = document.getElementById("globals");
+  const hasGlobals =
+    currentTraceStep?.globals &&
+    Object.keys(currentTraceStep.globals).some((key) => !isBuiltInObject(key));
+  const isGlobalScope =
+    !currentTraceStep?.stack_to_render ||
+    currentTraceStep.stack_to_render.length === 0;
+
+  if (globalFrame) {
+    if (isGlobalScope || hasGlobals) {
+      globalFrame.className = "stackFrame highlightedStackFrame";
+    } else {
+      globalFrame.className = "stackFrame";
+    }
+  }
+
+  // Clear existing stack frames (but preserve global frame structure)
+  const existingFrames = stackDiv.querySelectorAll(".stackFrame:not(#globals)");
+  existingFrames.forEach((frame) => frame.remove());
+
   // Add stack frames if any
-  if (currentTraceStep?.stack_to_render) {
+  if (
+    currentTraceStep?.stack_to_render &&
+    currentTraceStep.stack_to_render.length > 0
+  ) {
+    // Render frames in order (most recent frame at bottom)
     currentTraceStep.stack_to_render.forEach((frame: any, index: number) => {
-      const frameDiv = createStackFrame(frame, index);
+      const frameDiv = createEnhancedStackFrame(frame, index, currentTraceStep);
       stackDiv.appendChild(frameDiv);
     });
+
+    // Highlight the top frame (most recent call) if we're in a function
+    const topFrameDiv = stackDiv.querySelector(".stackFrame:last-child");
+    if (topFrameDiv && currentTraceStep.event !== "return") {
+      topFrameDiv.classList.add("highlightedStackFrame");
+    }
   }
 }
 
@@ -711,11 +1053,14 @@ function updateGlobalVariables(table: HTMLElement, traceStep: any) {
   const globals = traceStep?.globals || {};
 
   let html = "";
+  let hasVisibleGlobals = false;
+
   for (const [name, value] of Object.entries(globals)) {
     // Filter out built-in objects for cleaner display
     if (!isBuiltInObject(name)) {
+      hasVisibleGlobals = true;
       html += `
-        <tr>
+        <tr class="variableTr" id="global_var_${name}">
           <td class="stackFrameVar">${escapeHtml(name)}</td>
           <td class="stackFrameValue">${formatValue(value)}</td>
         </tr>
@@ -723,34 +1068,87 @@ function updateGlobalVariables(table: HTMLElement, traceStep: any) {
     }
   }
 
+  // Show message if no global variables
+  if (!hasVisibleGlobals) {
+    html = `
+      <tr>
+        <td colspan="2" style="color: #999; font-style: italic; text-align: center; padding: 5px;">
+          No global variables
+        </td>
+      </tr>
+    `;
+  }
+
   table.innerHTML = html;
 }
 
-function createStackFrame(frame: any, index: number): HTMLElement {
+function createEnhancedStackFrame(
+  frame: any,
+  index: number,
+  currentTraceStep: any
+): HTMLElement {
   const frameDiv = document.createElement("div");
   frameDiv.className = "stackFrame";
   frameDiv.id = `stack${index}`;
 
+  // Add data attributes for frame identification (matching Python Tutor)
+  frameDiv.setAttribute("data-frame_id", frame.frame_id || index);
+  if (frame.parent_frame_id_list && frame.parent_frame_id_list.length > 0) {
+    frameDiv.setAttribute(
+      "data-parent_frame_id",
+      frame.parent_frame_id_list[0]
+    );
+  }
+
+  // Enhanced function name display (matching Python Tutor)
   const functionName = frame.func_name || "function";
+  let headerLabel = escapeHtml(functionName);
+
+  // Add frame ID if it's a parent frame or if showing all frame labels
+  if (frame.is_parent || frame.frame_id !== undefined) {
+    headerLabel = `f${frame.frame_id || index}: ${headerLabel}`;
+  }
+
+  // Add parent frame info if available
+  if (frame.parent_frame_id_list && frame.parent_frame_id_list.length > 0) {
+    headerLabel += ` [parent=f${frame.parent_frame_id_list[0]}]`;
+  } else {
+    headerLabel += ` [parent=Global]`;
+  }
 
   let html = `
-    <div class="stackFrameHeader">${escapeHtml(functionName)}</div>
+    <div class="stackFrameHeader">${headerLabel}</div>
     <table class="stackFrameVarTable">
   `;
 
-  // Add frame variables
-  if (frame.ordered_varnames) {
-    frame.ordered_varnames.forEach((varName: string) => {
-      const value = frame.locals?.[varName];
+  // Use encoded_locals (Python Tutor format) or fall back to locals
+  const variables = frame.encoded_locals || frame.locals || {};
+  const varNames = frame.ordered_varnames || Object.keys(variables);
+
+  // Add frame variables with enhanced formatting
+  if (varNames.length > 0) {
+    varNames.forEach((varName: string) => {
+      const value = variables[varName];
       if (value !== undefined) {
         html += `
-          <tr>
+          <tr class="variableTr" id="var_${
+            frame.unique_hash || index
+          }_${varName}">
             <td class="stackFrameVar">${escapeHtml(varName)}</td>
             <td class="stackFrameValue">${formatValue(value)}</td>
           </tr>
         `;
       }
     });
+  } else {
+    // Show empty frame message if no variables
+    html += `
+      <tr>
+        <td colspan="2" style="color: #999; font-style: italic; text-align: center; padding: 5px;">
+          No local variables
+        </td>
+      </tr>
+    `;
   }
 
   html += `</table>`;
@@ -766,16 +1164,30 @@ function updateHeapObjects() {
   const currentTraceStep = renderExecutionTrace[renderCurrentStep];
   const heap = currentTraceStep?.heap || {};
 
+  console.log(`Step ${renderCurrentStep} - updateHeapObjects:`, heap);
+
   let html = '<div id="heapHeader">Objects</div>';
 
-  // Add heap objects
-  for (const [objId, objData] of Object.entries(heap)) {
-    if (objData && typeof objData === "object") {
-      html += createHeapObject(objId, objData);
-    }
-  }
+  // Organize heap objects into rows (similar to Python Tutor's layout)
+  const heapObjectIds = Object.keys(heap);
 
-  if (Object.keys(heap).length === 0) {
+  if (heapObjectIds.length > 0) {
+    // Create heap rows - for simplicity, we'll put objects in rows of 3
+    const rowSize = 3;
+    for (let i = 0; i < heapObjectIds.length; i += rowSize) {
+      html += '<div class="heapRow">';
+
+      const rowObjects = heapObjectIds.slice(i, i + rowSize);
+      rowObjects.forEach((objId) => {
+        const objData = heap[objId];
+        if (objData) {
+          html += createEnhancedHeapObject(objId, objData);
+        }
+      });
+
+      html += "</div>";
+    }
+  } else {
     html +=
       '<div style="color: #999; font-style: italic; text-align: center; padding: 20px;">No objects yet</div>';
   }
@@ -783,37 +1195,106 @@ function updateHeapObjects() {
   heapDiv.innerHTML = html;
 }
 
-function createHeapObject(objId: string, objData: any): string {
-  const objType = Array.isArray(objData) ? objData[0] : typeof objData;
+function createEnhancedHeapObject(objId: string, objData: any): string {
+  // Determine object type and structure
+  let objType = "object";
+  let isArray = false;
+  let properties: Array<{ key: string; value: any }> = [];
+
+  if (Array.isArray(objData)) {
+    objType = objData[0] || "UNKNOWN";
+
+    if (objType === "LIST") {
+      isArray = true;
+      // Convert list items to indexed properties
+      objData.slice(1).forEach((item: any, index: number) => {
+        properties.push({ key: index.toString(), value: item });
+      });
+    } else if (objType === "DICT" || objType === "INSTANCE") {
+      // Handle dictionary or instance objects
+      const objContents = objData[1] || {};
+      for (const [key, value] of Object.entries(objContents)) {
+        properties.push({ key, value });
+      }
+    } else if (objType === "FUNCTION") {
+      // Handle function objects
+      const objContents = objData[1] || {};
+      if (objContents.__name__) {
+        properties.push({ key: "__name__", value: objContents.__name__ });
+      }
+      if (objContents.__code__) {
+        properties.push({
+          key: "__code__",
+          value: objContents.__code__.substring(0, 100) + "...",
+        });
+      }
+      // Show other function properties
+      for (const [key, value] of Object.entries(objContents)) {
+        if (key !== "__name__" && key !== "__code__") {
+          properties.push({ key, value });
+        }
+      }
+    } else {
+      // Generic array handling
+      objData.slice(1).forEach((item: any, index: number) => {
+        properties.push({ key: index.toString(), value: item });
+      });
+    }
+  } else if (typeof objData === "object" && objData !== null) {
+    // Plain JavaScript object
+    objType = "object";
+    for (const [key, value] of Object.entries(objData)) {
+      properties.push({ key, value });
+    }
+  }
+
+  // Create enhanced object header with type and ID
+  const typeLabel = objType.toLowerCase();
+  const elementCount = properties.length;
+  const pluralSuffix = elementCount === 1 ? "" : "s";
+
+  let headerText = "";
+  if (objType === "FUNCTION") {
+    headerText = `function`;
+  } else if (isArray) {
+    headerText = `${typeLabel} [${elementCount} element${pluralSuffix}]`;
+  } else {
+    headerText = `${typeLabel} [${elementCount} propert${
+      elementCount === 1 ? "y" : "ies"
+    }]`;
+  }
 
   let html = `
-    <div class="heapObject" id="obj${objId}">
-      <div class="heapObjectHeader">${objType} (id: ${objId})</div>
+    <div class="heapObject toplevelHeapObject" id="obj${objId}">
+      <div class="heapObjectHeader">
+        <span class="typeLabel">${headerText}</span>
+        <br><span style="color: #666; font-size: 7pt;">id${objId}</span>
+      </div>
       <table class="heapObjectTable">
   `;
 
-  if (Array.isArray(objData)) {
-    // Handle array-like objects
-    if (objData[0] === "LIST") {
-      objData.slice(1).forEach((item: any, index: number) => {
-        html += `
-          <tr>
-            <td>${index}</td>
-            <td>${formatValue(item)}</td>
-          </tr>
-        `;
-      });
-    }
-  } else if (typeof objData === "object") {
-    // Handle object properties
-    for (const [key, value] of Object.entries(objData)) {
+  // Add properties/elements
+  if (properties.length > 0) {
+    properties.forEach(({ key, value }) => {
       html += `
         <tr>
-          <td class="stackFrameVar">${escapeHtml(key)}</td>
-          <td class="stackFrameValue">${formatValue(value)}</td>
+          <td class="objectKey" style="font-weight: bold; color: #3D58A2; font-size: 9pt; padding: 2px 4px; border-bottom: 1px dotted #cccccc;">
+            ${escapeHtml(key)}
+          </td>
+          <td class="objectValue" style="font-family: 'Andale Mono', monospace; font-size: 9pt; padding: 2px 4px; border-bottom: 1px dotted #cccccc;">
+            ${formatValue(value)}
+          </td>
         </tr>
       `;
-    }
+    });
+  } else {
+    html += `
+      <tr>
+        <td colspan="2" style="color: #999; font-style: italic; text-align: center; padding: 5px; font-size: 8pt;">
+          empty
+        </td>
+      </tr>
+    `;
   }
 
   html += `</table></div>`;
@@ -856,6 +1337,7 @@ function updateControls() {
 
 function isBuiltInObject(name: string): boolean {
   const builtIns = [
+    // Core JavaScript objects
     "JSON",
     "Math",
     "console",
@@ -867,6 +1349,8 @@ function isBuiltInObject(name: string): boolean {
     "require",
     "__dirname",
     "__filename",
+
+    // Built-in functions
     "parseInt",
     "parseFloat",
     "isNaN",
@@ -875,6 +1359,56 @@ function isBuiltInObject(name: string): boolean {
     "decodeURI",
     "encodeURIComponent",
     "decodeURIComponent",
+    "escape",
+    "unescape",
+    "eval",
+
+    // JavaScript constructors and prototypes
+    "Object",
+    "Array",
+    "String",
+    "Number",
+    "Boolean",
+    "Date",
+    "RegExp",
+    "Error",
+    "Function",
+    "Symbol",
+    "Map",
+    "Set",
+    "WeakMap",
+    "WeakSet",
+    "Promise",
+    "Proxy",
+    "Reflect",
+
+    // Browser/environment specific
+    "setTimeout",
+    "setInterval",
+    "clearTimeout",
+    "clearInterval",
+    "fetch",
+    "XMLHttpRequest",
+    "location",
+    "history",
+    "navigator",
+    "screen",
+    "localStorage",
+    "sessionStorage",
+
+    // Node.js specific
+    "module",
+    "exports",
+    "__webpack_require__",
+    "__webpack_exports__",
+
+    // Common library globals that might leak through
+    "jQuery",
+    "$",
+    "_",
+    "React",
+    "Vue",
+    "Angular",
   ];
   return builtIns.includes(name);
 }
@@ -885,30 +1419,71 @@ function formatValue(value: any): string {
   } else if (value === undefined) {
     return '<span class="nullObj">undefined</span>';
   } else if (typeof value === "string") {
-    return `<span class="stringObj">"${escapeHtml(value)}"</span>`;
+    // Handle special string cases and escape properly
+    const escapedValue = escapeHtml(value);
+    if (value.length > 50) {
+      // Truncate very long strings
+      const truncated = escapedValue.substring(0, 50) + "...";
+      return `<span class="stringObj" title="${escapedValue}">"${truncated}"</span>`;
+    }
+    return `<span class="stringObj">"${escapedValue}"</span>`;
   } else if (typeof value === "number") {
     return `<span class="primitiveObj">${value}</span>`;
   } else if (typeof value === "boolean") {
     return `<span class="primitiveObj">${value}</span>`;
+  } else if (typeof value === "function") {
+    return '<span class="typeLabel">function</span>';
   } else if (Array.isArray(value)) {
-    // Handle reference arrays like ["REF", 123]
+    // Handle reference arrays like ["REF", 123] - these point to heap objects
     if (value.length === 2 && value[0] === "REF") {
-      return `<span style="color: #3D58A2;">→ obj${value[1]}</span>`;
+      const objId = value[1];
+      return `<span class="objectRef" style="color: #3D58A2; cursor: pointer; text-decoration: underline;"
+                onclick="highlightHeapObject('obj${objId}')"
+                onmouseover="highlightHeapObject('obj${objId}')"
+                onmouseout="unhighlightHeapObject('obj${objId}')">
+                → id${objId}
+              </span>`;
     }
-    // Handle list representation like ["LIST", item1, item2, ...]
-    if (value[0] === "LIST") {
-      return `<span class="typeLabel">list [${value.length - 1} element${
-        value.length === 2 ? "" : "s"
-      }]</span>`;
+
+    // Handle typed array representations
+    if (value.length > 0) {
+      const arrayType = value[0];
+
+      if (arrayType === "LIST") {
+        const elementCount = value.length - 1;
+        return `<span class="typeLabel">list [${elementCount} element${
+          elementCount === 1 ? "" : "s"
+        }]</span>`;
+      } else if (arrayType === "DICT") {
+        const entries = value[1] || {};
+        const entryCount = Object.keys(entries).length;
+        return `<span class="typeLabel">dict [${entryCount} entr${
+          entryCount === 1 ? "y" : "ies"
+        }]</span>`;
+      } else if (arrayType === "INSTANCE") {
+        const className = value[1] || "Object";
+        return `<span class="typeLabel">${className} instance</span>`;
+      } else if (arrayType === "FUNCTION") {
+        const funcName = value[1] || "anonymous";
+        return `<span class="typeLabel">function ${funcName}</span>`;
+      } else if (arrayType === "CLASS") {
+        const className = value[1] || "Class";
+        return `<span class="typeLabel">class ${className}</span>`;
+      }
     }
+
+    // Generic array
     return `<span class="typeLabel">array [${value.length} element${
       value.length === 1 ? "" : "s"
     }]</span>`;
   } else if (typeof value === "object") {
-    return `<span class="typeLabel">object</span>`;
-  } else if (typeof value === "function") {
-    return `<span class="typeLabel">function</span>`;
+    // Handle plain objects
+    const keyCount = Object.keys(value).length;
+    return `<span class="typeLabel">object [${keyCount} propert${
+      keyCount === 1 ? "y" : "ies"
+    }]</span>`;
   } else {
+    // Fallback for any other types
     return `<span class="primitiveObj">${String(value)}</span>`;
   }
 }
@@ -918,6 +1493,27 @@ function escapeHtml(text: string): string {
   div.textContent = text;
   return div.innerHTML;
 }
+
+// Helper functions for object highlighting and interaction
+function highlightHeapObject(objId: string) {
+  const obj = document.getElementById(objId);
+  if (obj) {
+    obj.style.border = "2px solid #ffcc00";
+    obj.style.backgroundColor = "#ffffcc";
+  }
+}
+
+function unhighlightHeapObject(objId: string) {
+  const obj = document.getElementById(objId);
+  if (obj) {
+    obj.style.border = "1px solid #999999";
+    obj.style.backgroundColor = "#ffffff";
+  }
+}
+
+// Make these functions globally available for onclick handlers
+(window as any).highlightHeapObject = highlightHeapObject;
+(window as any).unhighlightHeapObject = unhighlightHeapObject;
 
 function showError(message: string) {
   const container = document.getElementById("visualizerContainer");
